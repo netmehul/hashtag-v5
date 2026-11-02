@@ -82,7 +82,7 @@ function Home() {
   }, []);
 
   return (
-    <main ref={mainRef} className="min-h-screen">
+    <main ref={mainRef} className="min-h-screen overflow-hidden">
       <Hero />
 
       {/* paints the gallery with the live theme colours and overrides any
