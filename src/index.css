@@ -1,0 +1,360 @@
+
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+
+@theme {
+  --color-background: #FFFAFA;
+  --color-foreground: #1A1110;
+  --color-accent: #ED2939;
+  --font-season: "Season Sans", "Arial Black", system-ui, sans-serif;
+  --font-body: "Geist", sans-serif;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("/fonts/SeasonSans/SeasonSans-TRIAL-Heavy.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Global reset */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  min-height: 100%;
+  scroll-behavior: auto;
+}
+
+body {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* Typography reset */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+
+
+
+
+/* ========================================
+   HASHTAG EVENTZ — GLASS CTA BUTTON
+======================================== */
+
+.cta-button {
+  --cta-red: #d71920;
+  --cta-red-hover: #f02a32;
+
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+
+  border: 1px solid transparent;
+  border-radius: 15px;
+  text-decoration: none;
+  font-family: var(--font-mono, "mono");
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1;
+
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 260ms ease,
+    background 260ms ease,
+    box-shadow 260ms ease,
+    color 260ms ease;
+}
+
+/* Sizing */
+
+.cta-button--sm {
+  min-height: 44px;
+  padding: 6px 7px 6px 18px;
+  gap: 18px;
+  font-size: 14px;
+}
+
+.cta-button--md {
+  min-height: 54px;
+  padding: 7px 8px 7px 22px;
+  gap: 24px;
+  font-size: 16px;
+}
+
+.cta-button--lg {
+  min-height: 64px;
+  padding: 8px 9px 8px 26px;
+  gap: 28px;
+  font-size: 18px;
+}
+
+.cta-button--fit {
+  width: fit-content;
+}
+
+.cta-button--full {
+  width: 100%;
+}
+
+/* Primary: dark glass, silver rim, red glow */
+
+.cta-button--primary {
+  color: #ffffff;
+  border-color: transparent;
+
+  background:
+    linear-gradient(#151515, #151515) padding-box,
+    linear-gradient(
+      125deg,
+      #111111 0%,
+      #858585 45%,
+      #dedede 70%,
+      #555555 100%
+    ) border-box;
+
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 5px 20px rgb(0 0 0 / 16%);
+}
+
+.cta-button--primary::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse at 0% 100%,
+      rgb(215 25 32 / 35%),
+      transparent 44%
+    ),
+    linear-gradient(
+      115deg,
+      transparent 15%,
+      rgb(255 255 255 / 9%) 48%,
+      transparent 70%
+    );
+
+  opacity: 0.8;
+  transition: opacity 300ms ease;
+}
+
+.cta-button--primary::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  bottom: 0;
+  width: 42%;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    var(--cta-red),
+    rgb(215 25 32 / 0%)
+  );
+
+  box-shadow: 0 0 12px rgb(215 25 32 / 60%);
+  transition: width 300ms ease;
+}
+
+/* Arrow tile */
+
+.cta-button__icon {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+
+  transition:
+    background 260ms ease,
+    color 260ms ease,
+    transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cta-button--sm .cta-button__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.cta-button--lg .cta-button__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+}
+
+.cta-button__icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cta-button--primary .cta-button__icon {
+  color: var(--cta-red);
+  background: #ffffff;
+}
+
+/* Secondary: white with a refined red rim */
+
+.cta-button--secondary {
+  color: #171717;
+  background: #ffffff;
+  border-color: rgb(215 25 32 / 65%);
+  box-shadow: inset 0 1px 0 #ffffff;
+}
+
+.cta-button--secondary .cta-button__icon {
+  color: var(--cta-red);
+  background: #f7eeee;
+}
+
+/* Ghost: minimal with a red accent */
+
+.cta-button--ghost {
+  color: var(--theme-text-primary, #171717);
+  background: transparent;
+  border-color: transparent;
+}
+
+.cta-button--ghost .cta-button__icon {
+  color: var(--cta-red);
+  background: rgb(215 25 32 / 8%);
+}
+
+/* Hover */
+
+@media (hover: hover) and (pointer: fine) {
+  .cta-button:hover {
+    transform: translateY(-2px);
+  }
+
+  .cta-button--primary:hover {
+    border-color: #a7a7a7;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 12%),
+      0 8px 26px rgb(0 0 0 / 22%),
+      0 0 22px rgb(215 25 32 / 10%);
+  }
+
+  .cta-button--primary:hover::before {
+    opacity: 1;
+  }
+
+  .cta-button--primary:hover::after {
+    width: 78%;
+  }
+
+  .cta-button__icon svg {
+    transform: translate(0, 0);
+  }
+
+  .cta-button:hover .cta-button__icon svg {
+    transform: translate(2px, -2px);
+  }
+
+  .cta-button--secondary:hover {
+    color: #ffffff;
+    background: var(--cta-red);
+    border-color: var(--cta-red);
+    box-shadow: 0 6px 20px rgb(215 25 32 / 18%);
+  }
+
+  .cta-button--secondary:hover .cta-button__icon {
+    color: var(--cta-red);
+    background: #ffffff;
+  }
+
+  .cta-button--ghost:hover .cta-button__icon {
+    background: rgb(215 25 32 / 15%);
+  }
+}
+
+/* Press and keyboard focus */
+
+.cta-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.cta-button:focus-visible {
+  outline: 2px solid var(--cta-red);
+  outline-offset: 4px;
+}
+
+.cta-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Reduced motion accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-button,
+  .cta-button::before,
+  .cta-button::after,
+  .cta-button__icon,
+  .cta-button__icon svg {
+    transition: none !important;
+  }
+}
