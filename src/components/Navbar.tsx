@@ -93,12 +93,12 @@ function Navbar() {
         <Link
           to="/"
           aria-label="Hashtag Eventz home"
-          className="relative z-50 shrink-0 px-6 py-2 rounded-xl bg-white/90 backdrop-blur-md"
+          className="relative z-50 shrink-0 px-2 py-2 rounded-xl"
         >
           <img
             src="/logoIcon.svg"
             alt="Hashtag Eventz"
-            className="w-10 sm:w-10 md:w-20"
+            className="w-10 sm:w-10 md:w-15"
           />
         </Link>
 

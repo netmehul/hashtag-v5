@@ -24,8 +24,6 @@ function Hero() {
                 md:py-24
                 py-4
                 px-4
-                bg-background
-                text-foreground
             ">
             {/* @container makes cqw units inside measure THIS box, not the viewport */}
             <div className="@container min-h-[75svh] relative z-10 w-full flex flex-col items-center justify-center md:min-h-[80svh] gap-4 select-none md:px-12">

@@ -37,7 +37,7 @@ const tileClass = (it: Item, activeId: string | null) => {
   return "col-span-1 row-span-1 md:col-span-3 md:row-span-2";
 };
 
-export default function WorkSection() {
+export default function GallerySection() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [webgl, setWebgl] = useState(true);
 
@@ -109,6 +109,7 @@ export default function WorkSection() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
+
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from(".gallery-heading-line", {
@@ -123,11 +124,14 @@ export default function WorkSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative w-screen overflow-x-clip px-[5vw] py-24 md:py-32">
+      <section
+        ref={sectionRef}
+        className="relative w-screen overflow-x-clip px-[5vw] py-24 text-foreground md:py-32"
+      >
       {/* Header */}
       <header className="gallery-header mb-14 flex flex-col gap-8 md:mb-20 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.25em] opacity-60">(Gallery)</p>
+          {/* <p className="font-mono text-xs uppercase tracking-[0.25em] opacity-60">(Gallery)</p> */}
           <h2 className="mt-6 text-[clamp(2.25rem,7vw,8rem)] font-light uppercase leading-[0.88] tracking-tight">
             <span className="block overflow-hidden pb-[0.08em]">
               <span className="gallery-heading-line block">Glimpses of</span>
@@ -137,7 +141,7 @@ export default function WorkSection() {
             </span>
           </h2>
         </div>
-        <div className="max-w-xs text-sm leading-relaxed opacity-60">
+        <div className="max-w-xs text-sm leading-relaxed opacity-60 flex flex-col gap-12">
           <p>Moments from the events, campaigns and brand stories we&apos;ve brought to life.</p>
           <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em]">Click any image to expand</p>
         </div>

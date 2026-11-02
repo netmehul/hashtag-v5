@@ -1,122 +1,105 @@
 # HASHTAG Eventz
 
-The front-end for the HASHTAG Eventz agency/events website. The experience currently combines a video-reveal hero with an interactive work gallery, responsive navigation, and supporting About, Projects, Clients, and Contact pages.
+The front-end for the HASHTAG Eventz agency and brand-experience website. The Home page is a visual, scroll-led experience with an interactive video hero, image gallery, video showreel, and animated About section.
 
-> **Project status:** The Home page contains the most developed experience. The other route pages are still early placeholders, and there is no backend, CMS, or contact form integration yet.
+> **Status:** The Home page is the most developed route. About, Projects, Clients, and Contact routes exist, but several remain placeholders. The app is currently a static client-side experience with no CMS, backend, or inquiry form integration.
 
-## Features
+## What’s in the experience
 
-- **Video-reveal hero:** A Three.js/WebGL shader reveals a looping video along a soft, cursor-following trail. The effect adapts to viewport size and pauses its video when off screen.
-- **Interactive Work gallery:** Nine local showcase items arranged in a responsive bento grid. Selecting an item expands it into a featured view with caption, progress, and previous/next controls.
-- **Gallery visual effects:** On supported pointer devices, one shared WebGL canvas renders the gallery with hover color reveal, image movement, and entrance effects. Touch/coarse-pointer devices and WebGL failures use regular images instead.
-- **Responsive navigation:** A floating header that hides while scrolling down and reappears while scrolling up, with a mobile menu.
-- **Motion and scrolling:** GSAP powers gallery transitions and scroll effects; Lenis provides smooth scrolling. Some gallery transitions respect `prefers-reduced-motion`.
-- **Reusable CTA:** `CTAButton` supports internal links, external links, and native buttons, with style, size, and width variants.
+- **Video-reveal hero:** A Three.js shader reveals a muted looping video along an animated pointer trail.
+- **Selectable image gallery:** Nine local images in a responsive bento layout. Selecting a tile expands it and shows its caption, progress, and navigation controls.
+- **WebGL gallery effects:** On compatible pointer devices, one Three.js canvas renders pointer-driven color reveal, lens distortion, and entrance effects. Touch/coarse-pointer devices and WebGL failures fall back to standard images.
+- **Video showreel:** Eight video projects are presented in a curved perspective carousel. Navigate with drag/swipe, arrow controls, or Left/Right Arrow keys.
+- **Animated About section:** Scroll-triggered copy and metric reveals, plus an interactive 3D model.
+- **Responsive navigation:** Floating header hides while scrolling down and reappears while scrolling up; includes a mobile dropdown menu.
+- **Theme transitions:** Home scrolls from a dark hero into light Gallery/Showreel sections and back to a dark About section.
 
-## Tech stack
+## Technology
 
-- React 19 and TypeScript
+- React 19 + TypeScript
 - Vite 8
 - Tailwind CSS 4
 - React Router 7
 - Three.js
-- GSAP (including Flip and ScrollTrigger)
+- GSAP (ScrollTrigger and Flip) + `@gsap/react`
 - Lenis
-- Geist Variable and local Season Sans font files
+- Geist Variable and local Season Sans files
 
 ## Getting started
 
-Install dependencies and run the Vite development server:
+Requirements: Node.js and npm versions compatible with the installed Vite 8 toolchain.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Vite prints the local URL in the terminal. The project is a client-side app; no API keys or backend services are currently required.
+Vite prints the development URL in the terminal. The app does not currently require API keys or a backend service.
 
-## Available scripts
+## Scripts
 
 | Command | Description |
 |---|---|
 | `npm run dev` | Start the development server with hot module replacement |
-| `npm run build` | Type-check the project and create a production build in `dist/` |
-| `npm run preview` | Serve the production build locally |
+| `npm run build` | Type-check and create a production build in `dist/` |
+| `npm run preview` | Preview the production build locally |
 | `npm run lint` | Run ESLint |
 
-There is currently no test script or test suite.
+No test runner or test script is configured yet.
 
-## Routes and information architecture
+## Routes
 
-Routes are declared in `src/App.tsx`. The shared navigation is rendered on every route.
+Routes are declared in `src/App.tsx`; the shared navbar appears across routes.
 
-| Path | Page | Current content |
+| Path | Page | Current state |
 |---|---|---|
-| `/` | Home | Hero and interactive Work gallery |
-| `/about-us` | About | Short About introduction |
+| `/` | Home | Hero, Gallery, WorkShowcase, About section |
+| `/about-us` | About | Minimal About content |
 | `/projects` | Projects | Placeholder heading |
 | `/clients` | Clients | Placeholder heading |
 | `/contact-us` | Contact | Placeholder “Start Project” heading |
 
-**Known navigation mismatch:** The navbar currently links to `/about` and `/contact`, while the registered page routes are `/about-us` and `/contact-us`. Align these paths before relying on those links. There is no catch-all/not-found route.
+**Known mismatch:** The navbar currently targets `/about` and `/contact`, while the registered routes are `/about-us` and `/contact-us`. Unknown paths have no dedicated not-found page.
 
-## Home gallery interaction
+## Home page components
 
-The gallery data and selection behavior live in `src/components/Home/Work.tsx`; WebGL rendering and fallback behavior live in `src/components/providers/GalleryGL.tsx`.
+### Hero
 
-- Choose a tile to expand it and show its caption panel.
-- Use the Previous/Next buttons or Left/Right Arrow keys to move through the items.
-- Use Close or Escape to return to the grid.
-- On touch/coarse-pointer devices, if WebGL cannot be created or loses its context, or if no gallery texture loads within 10 seconds, regular image elements are shown.
+`src/components/Home/Hero.tsx` composes `BurnReveal`, which uses `/videos/hero-burn.mp4` with a spring-following pointer, a decaying heat mask, and a shader-rendered video reveal.
 
-The nine gallery entries and their copy are currently hard-coded examples, not CMS-backed project data.
+### Image gallery
 
-## Repository layout
+`src/components/Home/Gallery.tsx` defines the nine image items. `src/components/providers/GalleryGL.tsx` handles the WebGL canvas and its plain-image fallback. Select a tile to expand it; use Previous/Next, Left/Right Arrow keys, or Escape to navigate/close.
 
-```text
-src/
-  App.tsx                         Router and shared page shell
-  main.tsx                        React entry point and global styles
-  index.css                       Tailwind theme, font declarations, CTA styles
-  App.css                         Legacy starter styles
-  components/
-    Navbar.tsx                    Responsive, scroll-aware navigation
-    CTAButton.tsx                 Reusable CTA component
-    Home/
-      Hero.tsx                    Home hero composition and reveal settings
-      BurnReveal.tsx              Three.js hero reveal effect
-      Work.tsx                    Home gallery content and interactions
-    providers/
-      GalleryGL.tsx               WebGL gallery renderer and fallback handling
-  lib/
-    SmoothScroll.tsx              Lenis and GSAP ticker integration
-  pages/
-    Home.tsx
-    About.tsx
-    Projects.tsx
-    Clients.tsx
-    Contact.tsx
-public/
-  GalleryAssets/                  Gallery images (01.webp–09.webp)
-  fonts/SeasonSans/               Local Season Sans font files
-  videos/                          Hero videos
-```
+### Video showreel
 
-## Assets and fonts
+`src/components/Home/WorkShowcase.tsx` reads its eight entries from `src/data/workData.ts`. Drag/swipe the curved carousel or use its controls and arrow keys. The selected muted video is intended to play while the section is visible. Media files are in `public/WorkAssets/`.
 
-- The hero loads `/videos/hero-burn.mp4`.
-- Gallery images are loaded from `/GalleryAssets/01.webp` through `/GalleryAssets/09.webp`.
-- The navbar uses `/logoIcon.svg`.
-- `font-season` is defined in `src/index.css`. The current declaration points to `SeasonSans-TRIAL-Heavy.woff2` at weight 900, while the hero heading requests Tailwind `font-bold` (700). The `SeasonSans-TRIAL-Bold.woff2` file is present but is not currently the registered face. Confirm the intended font weight and licensing before release; the local font filenames identify trial files.
-- Geist Variable is provided by `@fontsource-variable/geist`.
+### About and 3D model
 
-## Current engineering follow-ups
+`src/components/Home/Aboutsection.tsx` contains animated company copy, four displayed metrics, and `ModelViewer`. The model loads `public/model/abstract_shape.glb` and responds to pointer drag, pointer tilt, and scroll.
 
-- Align the About and Contact navbar destinations with their registered routes.
-- Build out Projects, Clients, About, and Contact pages; define and implement a real project inquiry flow.
-- Decide on the intended Season Sans weight and match the `@font-face` declaration to the hero's requested weight.
-- Add a not-found route and tests for navigation/gallery behavior as the application grows.
-- Re-run `npm run build` and `npm run lint` against the latest changes. The last recorded lint run reported `react-hooks/set-state-in-effect` in the navbar's route-change effect. A previous production build also reported a large main JavaScript chunk; measure the current build before deciding on code splitting.
-- Review keyboard/focus behavior and reduced-motion support across the navigation, hero, and gallery.
+## Assets and site metadata
 
-For a fuller implementation handover—including interaction details and current behavior—see [context.md](./context.md).
+- Gallery imagery: `public/GalleryAssets/01.webp`–`09.webp`
+- Showreel videos: `public/WorkAssets/`
+- Hero video: `public/videos/hero-burn.mp4`
+- 3D asset: `public/model/abstract_shape.glb`
+- Logo icon: `public/logoIcon.svg`
+- Social preview: `public/og-image.jpg`
+- Fonts: `public/fonts/SeasonSans/` and Geist Variable from npm
+
+`index.html` sets the title, favicon, Open Graph metadata, and Twitter large-image metadata. The social image path is root-relative (`/og-image.jpg`); configure an absolute public URL when the deployment domain is finalized. The hero currently requests Season Sans weight 700, while the registered face uses the Heavy file at weight 900; choose the intended face/weight before release. The local font files are marked as trial fonts, so confirm production licensing.
+
+## Current follow-ups
+
+- Correct the Navbar About/Contact paths.
+- Confirm which work gallery represents the final project portfolio; the image gallery and video showreel use separate hard-coded datasets.
+- Verify the showreel poster paths: `workData.ts` references `/images/work/*.jpg`, but those posters were not present in the current asset inventory.
+- Confirm About copy and displayed business metrics.
+- Complete Projects, Clients, About, and Contact routes; define the Contact inquiry flow.
+- Address the current lint errors: Navbar state update inside a route-change effect and `GalleryGL` refs updated during render.
+- Measure bundle and GPU/mobile performance. A recent build emitted a ~1.08 MB minified JavaScript chunk, and multiple Three.js renderers are used on Home.
+- Add tests and a not-found route.
+
+For detailed architecture, behavior, and handover notes, see [context.md](./context.md).

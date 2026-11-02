@@ -1,181 +1,175 @@
-# Hashtag project context
+# HASHTAG Eventz — Project Handover Context
 
-## Purpose and current state
+## Project overview
 
-This repository is the front-end for a branded agency/events website called **HASHTAG Eventz**. It is a client-rendered React site built with TypeScript and Vite. The current design direction pairs the home-page video-backed, cursor-following “burn/reveal” hero with a light floating navigation bar, rounded white surfaces, custom display/body fonts, and reusable red-accented CTA buttons.
+This repository contains the client-side website for **HASHTAG Eventz**, an events and brand-experience company. The app is built with React and TypeScript using Vite. Its current Home experience is a long-form visual landing page: dark video-reveal hero, light image gallery, light video showreel, and an animated About section that transitions back to dark.
 
-The project is an early/incomplete website implementation, not a feature-complete agency site:
+The Home page is substantially more developed than the other routes. About, Projects, Clients, and Contact routes exist, but three are placeholders and About content is also present as a richer Home section. This is still a static front-end: no API, CMS, contact submission, authentication, or persistent app data is wired up.
 
-- The Home route has the developed hero effect and brand headline, followed by an interactive nine-item Work gallery.
-- About Us, Projects, Clients, and Start Project routes exist, but are mostly placeholders.
-- No server, API integration, CMS, form submission, or persistent application state is present in the inspected source.
-- No test script or test files are present in the project source.
-- The project README is still the default React/Vite template and does not describe the product.
+## Stack and commands
 
-Treat these as observations of the current code, not as confirmation of the intended final brand or product requirements.
-
-## Tech stack and commands
-
-- React 19 + TypeScript 5.9
-- Vite 8, with the React and Tailwind CSS Vite plugins
-- Tailwind CSS 4 for utility classes and theme tokens
-- React Router 7 for client-side routes
-- Three.js for the WebGL hero reveal
-- Lenis + GSAP ticker for global smooth scrolling
-- Geist Variable (installed through `@fontsource-variable/geist`) and a locally supplied Season Sans font
-
-Commands from `package.json`:
+- React 19, TypeScript 5.9
+- Vite 8
+- Tailwind CSS 4
+- React Router 7
+- Three.js for the hero, gallery, and 3D model
+- GSAP with ScrollTrigger and Flip, plus `@gsap/react`
+- Lenis for smooth scrolling
+- Geist Variable (npm package) and local Season Sans trial font assets
 
 ```bash
 npm install
-npm run dev       # local development server
-npm run build     # TypeScript project build, then Vite production build
+npm run dev       # Vite development server
+npm run build     # TypeScript build + production bundle
 npm run lint      # ESLint
-npm run preview   # serve the production build locally
+npm run preview   # Serve dist/
 ```
 
-Last build/lint verification was before the latest Home gallery change: build passed with a roughly 928 kB minified main chunk warning; lint failed on `react-hooks/set-state-in-effect` in `src/components/Navbar.tsx:20`, where the route-change effect synchronously calls `setIsMenuOpen(false)`. Re-run both checks after the gallery update. Three.js is a likely large-bundle contributor, but bundle analysis has not been run.
+### Latest verification
+
+At this handover, `npm run build` succeeds. Vite reports a 1,080.77 kB minified JavaScript chunk (311.27 kB gzip), above its 500 kB advisory threshold.
+
+`npm run lint` fails with three React Hooks diagnostics:
+
+- `src/components/Navbar.tsx:20`: synchronous state update inside the route-change effect (`react-hooks/set-state-in-effect`).
+- `src/components/providers/GalleryGL.tsx:112` and `:114`: refs updated during render (`react-hooks/refs`).
+
+No test script or test files are currently present. Re-run checks after changes; these findings describe the last observed run, not necessarily future state.
 
 ## Information architecture and routes
 
-`src/App.tsx` owns the router and renders the shared `Navbar` above every route:
+`src/App.tsx` creates a `BrowserRouter`, renders the shared `Navbar`, then renders the matched page:
 
-| URL | Page component | Current page content |
+| Route | Component | Current contents |
 |---|---|---|
-| `/` | `src/pages/Home.tsx` (imported as `Home`) | Hero followed by the interactive Work gallery |
-| `/about-us` | `src/pages/About.tsx` | “About Us” and “We are experience-makers.” |
-| `/projects` | `src/pages/Projects.tsx` | “Projects” heading only |
-| `/clients` | `src/pages/Clients.tsx` | “Clients” heading only |
-| `/contact-us` | `src/pages/Contact.tsx` | “Start Project” heading only |
+| `/` | `src/pages/Home.tsx` | Hero, Gallery, WorkShowcase, About section |
+| `/about-us` | `src/pages/About.tsx` | Minimal About page |
+| `/projects` | `src/pages/Projects.tsx` | Placeholder heading |
+| `/clients` | `src/pages/Clients.tsx` | Placeholder heading |
+| `/contact-us` | `src/pages/Contact.tsx` | “Start Project” heading |
 
-The navbar currently links to Home (`/`), About (`/about`), Projects (`/projects`), Clients (`/clients`), and a “Start a Project” CTA (`/contact`). **The About and CTA destinations do not match the registered routes** (`/about-us` and `/contact-us`), so those two navbar links currently lead to a URL with no matching page. There is no catch-all route or not-found page; an unmatched URL renders the navbar without a matching page element.
+There is no not-found route; unmatched locations show the shared navbar without page content.
 
-### Main user flow as implemented
+**Known route mismatch:** Navbar links currently use `/about` and `/contact`; the router only registers `/about-us` and `/contact-us`. Projects and Clients paths match. Align paths or intentionally add aliases.
 
-1. A visitor lands on `/` and sees the HASHTAG / Eventz hero.
-2. They can explore the pointer-driven video reveal by moving the pointer across the hero. On touch-capability devices, the effect instead wanders automatically unless reduced motion is requested; touch pointer events can also activate it.
-3. Scrolling down reveals the Work gallery: nine sample project/event tiles with title, category, and short descriptions. Selecting a tile expands it into a featured stage and opens an adjacent caption panel.
-4. In the expanded gallery, Previous/Next buttons cycle through all nine entries, Close or Escape returns to the grid, and left/right arrow keys cycle entries. On touch/coarse-pointer devices or when WebGL fails, the gallery falls back to regular `<img>` rendering.
-5. The navbar links to Projects and Clients correctly. Its About and “Start a Project” links currently point at unregistered paths (`/about` and `/contact`); the corresponding pages are registered at `/about-us` and `/contact-us`.
-6. On mobile, the burger opens a dropdown navigation panel. Selecting a mobile link, changing route, scrolling down, or pressing Escape closes it. Clicking the logo goes Home.
-7. There are no conversion, contact, project-detail, or client-detail flows beyond those route transitions and the Home showcase yet.
+## Current Home page flow
 
-## UI, visual direction, and motion
+`src/pages/Home.tsx` renders these sections in order:
 
-### Shared shell and styling
+1. **Hero** — black/dark brand title and “Eventz” subtitle with an interactive video-reveal effect.
+2. **Gallery** — nine image tiles in a responsive bento layout.
+3. **Work in motion** — a separate 3D cylindrical showreel containing eight video entries.
+4. **About** — animated company statement, animated numerical metrics, and an interactive 3D abstract model.
 
-- `src/components/Navbar.tsx` is a fixed, floating white/translucent header with the brand SVG, dark uppercase links, and a reusable CTA. On scroll down (more than 5px difference after the first 80px) it hides; on scroll up it returns. On mobile it uses a dropdown panel and burger, closes on route changes, Escape, or scroll down, and exposes `aria-expanded`/`aria-controls`. The mobile navigation is hidden from assistive technology while closed and its links are removed from tab order.
-- `src/components/CTAButton.tsx` is the shared CTA implementation. It can render a React Router `Link`, external anchor, or native button; supports `primary`, `secondary`, and `ghost` variants, `sm`/`md`/`lg` sizes, `fit`/`full` widths, and an optional decorative arrow tile. The navbar currently uses the small primary variant.
-- `src/index.css` imports Tailwind and Geist Variable, and declares theme colors (`background` `#FFFAFA`, `foreground` `#1A1110`, `accent` `#ED2939`) plus `font-season` and `font-body` Tailwind font tokens. The body uses Geist on a black background with white text. The stylesheet defines the CTA appearance, hover/press/focus/disabled states, and reduced-transition behavior.
-- The current `font-season` face points to `/fonts/SeasonSans/SeasonSans-TRIAL-Heavy.woff2` at weight 900, while the hero heading requests Tailwind `font-bold` (700). The requested `SeasonSans-TRIAL-Bold.woff2` asset exists but is not the file currently registered in `@font-face`. Decide which weight is intended and align the face URL/declared weight with the hero utility. The prior build check predates this latest source state.
-- `src/App.css` contains styling from the Vite starter app (counter, demo hero, and next-step sections). Those selectors do not appear in the current page markup.
-- The hero uses the Season Sans font token for the “Hashtag” display title and Geist for “Eventz”. The title uses container-query width units (`cqw`) to scale continuously with its container, rather than a set of font-size breakpoints. The section is responsive and capped at 1920px on wider screens.
-- The Work section has a light/neutral project-gallery presentation with a responsive two-column mobile / 12-column desktop bento grid. GSAP ScrollTrigger animates the heading into view; GSAP Flip animates tile layout changes when a work item is selected. Respect `prefers-reduced-motion` by removing the Flip duration and using non-smooth scroll positioning.
+`Home.tsx` uses GSAP ScrollTriggers to transition the page theme from dark at the hero to the light theme through Gallery and WorkShowcase, then back to dark at About. The light colors come from the CSS theme tokens in `src/index.css`. The fade switches to threshold behavior when reduced motion is requested.
 
-### Home Work gallery
+### Hero reveal
 
-The Home route composes `Hero` and `WorkSection` in `src/pages/home.tsx`. `src/components/Home/Work.tsx` defines nine hard-coded showcase entries (IDs `01`–`09`) with local image paths, titles, categories, short descriptions, and optional focal-point metadata. The images are in `public/GalleryAssets/`.
+`src/components/Home/Hero.tsx` renders a fluid-size Season Sans “Hashtag” heading and Geist “Eventz” subtitle. It configures `BurnReveal` with `/videos/hero-burn.mp4`, radius 360, and decay 0.5.
 
-- At rest, the entries form a responsive bento grid with hover labels and an accessible button over each image.
-- Selecting an entry rearranges the grid using GSAP Flip: the chosen image becomes the large stage and an adjacent caption panel presents its category, title, description (desktop), count/progress, previous/next controls, and close control.
-- Keyboard interaction while an item is active: Escape closes; Left/Right Arrow changes the selected item. Selection wraps at either end.
-- `src/components/providers/GalleryGL.tsx` draws the images in one transparent Three.js canvas. Each plane follows its tile's live bounding box, including during Flip transitions. The shader handles cover/focal-point cropping, grayscale-to-color pointer reveal, a lens/bulge effect, scroll-velocity bend/RGB split, and a staggered intro reveal.
-- The gallery deliberately switches to ordinary `<img>` elements for coarse/touch pointers. It also signals fallback if WebGL creation fails, the context is lost, or no image texture loads within 10 seconds. Individual failed texture loads do not fail the entire gallery.
-- The selected-work set and copy are currently hard-coded sample content, not sourced from a CMS/API. Each gallery image has an `alt` based on its title.
+`src/components/Home/BurnReveal.tsx` uses a transparent Three.js canvas, shader noise, a CPU-side heat grid, and a spring-following pointer to reveal a looping muted video underneath. The heat trail fades behind the pointer. The effect resizes with the section and pauses its video when not visible. Reduced motion suppresses the automatic wandering behavior on non-hover devices; it does not disable pointer interaction.
 
-### Hero reveal effect
+The `font-season` theme face currently points to `/fonts/SeasonSans/SeasonSans-TRIAL-Heavy.woff2` at weight 900, while the hero requests Tailwind `font-bold` (700). `SeasonSans-TRIAL-Bold.woff2` exists but is not the registered face. Choose the intended weight and align the font-face URL/weight with the CSS utility. These are trial-named font files; confirm the license is suitable before production.
 
-The effect is implemented in `src/components/Home/BurnReveal.tsx`, used by `src/components/Home/Hero.tsx`.
+### Gallery tiles
 
-- A transparent Three.js/WebGL canvas overlays the hero. The normal hero text is underneath the overlay; a heat-mask-shaped region reveals a muted looping video while covering the text in that region.
-- Pointer movement is measured relative to the hero section. A spring model gives the reveal a trailing, slightly elastic response; the reveal radius grows with pointer speed.
-- The effect stamps heat into a CPU-side grid with roughly 6 CSS-pixel cells. Heat decays over time, creating a temporary trail that closes behind the pointer.
-- A fragment shader adds low-frequency organic edge wobble and a smaller amount of edge tearing. Until video data is available, a dark animated shader texture is shown through the reveal.
-- The video asset is `public/videos/hero-burn.mp4`, loaded at `/videos/hero-burn.mp4`. It is muted, looping, inline, and intended to autoplay.
-- Default effect props are a 240px desktop radius and decay of 1.4 heat units per second. The radius is scaled to 65% below 768px.
-- `ResizeObserver` recalculates renderer/grid/video sizing. `IntersectionObserver` pauses the video when the hero leaves view and skips effect updates/rendering while hidden.
-- `prefers-reduced-motion` suppresses the automatic wandering effect on devices reporting no hover. It does **not** disable the effect for an active pointer.
-- Cleanup removes event listeners/observers, stops the animation frame and video, and disposes the Three.js resources.
+`src/components/Home/Gallery.tsx` owns the nine static gallery items, selection state, keyboard handling, and grid presentation. The images are `/GalleryAssets/01.webp` through `/GalleryAssets/09.webp`.
 
-### Smooth-scroll lifecycle
+- At rest, images appear in a two-column mobile / 12-column desktop bento grid with title/category labels on hover.
+- Selecting an image expands it into a featured stage and reveals a caption panel with category, title, description, item progress, previous/next, and close controls.
+- Previous/Next buttons and Left/Right Arrow keys cycle through items; Escape closes the active selection.
+- GSAP Flip animates tile geometry; ScrollTrigger animates the heading. Reduced motion disables the Flip duration and smooth auto-scroll.
 
-`src/main.tsx` mounts `SmoothScroll` and `App` inside React `StrictMode`. `src/lib/SmoothScroll.tsx` creates one Lenis instance, advances it from the GSAP ticker, and calls `ScrollTrigger.update()` on Lenis scroll events. It removes the ticker/listener and destroys Lenis on unmount. ScrollTrigger is registered, although no ScrollTrigger animations are currently present in the inspected source.
+`src/components/providers/GalleryGL.tsx` puts all tiles into one WebGL canvas. Its shader creates an organic pointer-driven grayscale-to-color reveal, lens distortion, scroll-velocity bend/RGB split, and staggered intro. On touch/coarse-pointer devices or WebGL failure/context loss/total texture-load timeout, the component falls back to regular `<img>` rendering. The source currently also updates `activeRef` and `failRef` during render, which ESLint flags.
+
+### Video showreel
+
+`src/components/Home/WorkShowcase.tsx` displays the separate `workData` carousel as a curved, perspective cylinder. It supports pointer drag/swipe with momentum, Previous/Next controls, and Left/Right Arrow keys. Clicking a non-centered video brings it to center; clicking the centered video toggles playback. Only the active video is intended to play while the section is visible; it is muted, looping, inline, and uses `preload="none"`. It respects reduced motion by disabling auto-play/transition movement.
+
+The eight entries are defined in `src/data/workData.ts`, with title, category, year, location, description, video URL, poster URL, slug, featured flag, and tags. The video files exist in `public/WorkAssets/`. The `image` poster URLs point under `/images/work/`, but those poster files were not present in the current public-file inventory; verify/provide them or update those URLs.
+
+### About section and 3D model
+
+`src/components/Home/Aboutsection.tsx` includes the company statement, four displayed metrics, and `ModelViewer`. GSAP animations reveal the statement word-by-word, count metrics upward, draw rules, and rotate a decorative hash; animations are scoped to no-preference for reduced motion.
+
+The current metrics are `13+ Years of experience`, `4000+ Successful events`, `40+ Brand collaborations`, and `30+ Daily order from customer`. Treat these as supplied copy/data and confirm factual accuracy and wording with the project owner.
+
+`src/components/providers/ModelViewer.tsx` loads `/model/abstract_shape.glb` into a transparent Three.js scene with studio environment lighting and a red rim light. The model can auto-rotate, tilt toward pointer movement, react to scroll position, and be dragged/flung. It pauses its animation loop while offscreen and removes listeners/render resources on unmount.
+
+## Shared navigation and CTAs
+
+`src/components/Navbar.tsx` renders a fixed header with `/logoIcon.svg`, desktop links, and a mobile dropdown:
+
+- It hides when scrolling down beyond the first 80px and reappears when scrolling up; scroll handling is throttled with `requestAnimationFrame`.
+- The mobile menu closes on route changes, scroll down, and Escape; the burger exposes `aria-expanded` and `aria-controls`, and closed mobile links have `tabIndex=-1`.
+- The About link points to `/about` and the “Start a Project” CTA points to `/contact`, both currently mismatched with registered routes.
+- The route-change effect synchronously sets state and is the current navbar lint error.
+
+`src/components/CTAButton.tsx` renders an internal React Router link, external anchor, or native button. It supports `primary`/`secondary`/`ghost`, `sm`/`md`/`lg`, `fit`/`full`, and optional arrow icon. CTA styles and reduced-transition support are in `src/index.css`.
+
+## Metadata, assets, and styling
+
+- `index.html` sets the title to **HASHTAG Eventz**, uses `/logoIcon.svg` as favicon, and sets Open Graph and Twitter title/description/image metadata.
+- Social image: `/og-image.jpg`. These are root-relative URLs; social crawlers generally need absolute URLs, so set the canonical production origin if/when it is known.
+- Hero video: `public/videos/hero-burn.mp4`; an additional `raw_hero-burn.mp4` is present but its usage is unconfirmed.
+- Gallery images: `public/GalleryAssets/`.
+- Showreel videos: `public/WorkAssets/`.
+- 3D model: `public/model/abstract_shape.glb`.
+- Brand assets: `public/logoIcon.svg`, `public/logoFull.svg`, `public/favicon.svg`, `public/icons.svg`.
+- Season Sans files: `public/fonts/SeasonSans/`; Geist comes from `@fontsource-variable/geist`.
+- `src/index.css` defines Tailwind theme colors, font tokens, global reset, and CTA styles. Body defaults are black/white; Home changes theme tokens as it scrolls.
+- `src/App.css` remains Vite starter CSS and its selectors do not appear in the current UI.
 
 ## Source map
 
 ```text
 src/
-  App.tsx                       Router and shared page shell
-  main.tsx                      React entry point, global CSS, smooth scroll mount
-  index.css                     Tailwind import, theme variables, global reset
-  App.css                       Legacy Vite demo CSS
+  App.tsx
+  main.tsx
+  index.css
+  App.css
+  data/
+    workData.ts                 Video showreel content
   components/
-    Navbar.tsx                  Fixed, scroll-aware responsive navigation
-    CTAButton.tsx               Reusable link/anchor/button CTA with variants
+    Navbar.tsx
+    CTAButton.tsx
     Home/
-      Hero.tsx                  Fluid-type home headline and effect configuration
-      BurnReveal.tsx             Three.js canvas/video reveal implementation
-      Work.tsx                   Nine-item interactive Home work gallery
+      Hero.tsx
+      BurnReveal.tsx
+      Gallery.tsx               Nine-image selectable gallery
+      WorkShowcase.tsx          Video carousel
+      Aboutsection.tsx          About copy, metrics, and model composition
     providers/
-      GalleryGL.tsx              Three.js gallery canvas, shader, and fallback
+      GalleryGL.tsx
+      ModelViewer.tsx
+      HorizontalScroll.tsx      Reusable helper; current call sites not confirmed
   lib/
-    SmoothScroll.tsx             Lenis + GSAP ticker integration
+    SmoothScroll.tsx
   pages/
     Home.tsx
     About.tsx
     Projects.tsx
     Clients.tsx
     Contact.tsx
-  assets/
-    hero.png, react.svg, vite.svg  Present but not referenced by current app source
 public/
-  videos/hero-burn.mp4           Hero reveal video
-  videos/raw_hero-burn.mp4       Additional source video asset (usage unconfirmed)
-  GalleryAssets/01.webp–09.webp  Gallery project imagery
-  logoFull.svg, logoIcon.svg     Brand logo assets used/available in public root
-  favicon.svg, icons.svg, og-image.jpg
-  fonts/SeasonSans/              Local Season Sans trial font files
+  GalleryAssets/
+  WorkAssets/
+  fonts/SeasonSans/
+  model/
+  videos/
 ```
 
-Other useful root files:
+## Open ends and next-agent guidance
 
-- `index.html`: Vite HTML entry point; the current document title is `hashtag-v5`.
-- `vite.config.ts`: Vite plugin configuration for React and Tailwind.
-- `eslint.config.js`, `tsconfig*.json`: lint and TypeScript project configuration.
-- `README.md`: default scaffold documentation; replace/update for this project when appropriate.
+1. Align Navbar destinations with the route table or add intended route aliases.
+2. Decide whether the nine-image Gallery, eight-item WorkShowcase, or both represent the final portfolio; their content is currently separate and hard-coded.
+3. Fix/verify showreel poster paths under `/images/work/`; those files were not found in the current public asset inventory.
+4. Choose intended Season Sans weight and align font-face declaration and utility weight; verify loading and font license.
+5. Confirm the About metrics and copy are accurate and approved.
+6. Build out the non-Home route pages and actual Contact inquiry submission flow. Add a not-found page.
+7. Resolve the three current lint errors (Navbar set-state-in-effect; GalleryGL render-time ref writes).
+8. Reassess bundle size and GPU/mobile performance. The latest build emits a roughly 1.08 MB minified JS chunk, and the Home page contains multiple Three.js renderers.
+9. Review keyboard, focus, reduced-motion, and fallback behaviors for navigation, gallery, showreel, and 3D model.
+10. Add tests; none are currently configured.
 
-## Architecture and implementation conventions
-
-- Routing is centralized in `App.tsx`; page components are simple route-level components.
-- The navbar is outside `<Routes>`, so it persists across route changes. It uses `useLocation` to close its mobile panel on path changes.
-- Keep registered route paths and navbar destinations synchronized; they have drifted (`/about` vs `/about-us`, `/contact` vs `/contact-us`).
-- The hero reveal is isolated as a reusable component configured via props (`containerRef`, `videoSrc`, `radius`, `decay`). Its pointer listeners attach to the hero section while the canvas overlay is `aria-hidden` and ignores pointer events.
-- The Home gallery data is currently local and hard-coded in `Work.tsx`; image loading and shader rendering are handled separately by `GalleryGL.tsx`. Preserve the plain-image fallback when changing the WebGL gallery.
-- Use `CTAButton` for consistent CTA visuals; its CSS classes are defined in `index.css`, not `App.css`.
-- Static public files are addressed from the site root (for example, `/videos/hero-burn.mp4`); imported source assets would instead be bundled by Vite.
-- There is no observed shared data layer, state store, backend client, authentication, or environment-variable setup. Avoid introducing these without a real feature requirement.
-
-## Open ends and handover checklist
-
-### Product/content work
-
-1. **Fix navigation route mismatches.** `Navbar.tsx` sends About to `/about` and the CTA to `/contact`, but `App.tsx` registers `/about-us` and `/contact-us`. Choose canonical paths and align both sides (or add intentional aliases).
-2. **Finish route content and page designs.** The Home page now has a sample work showcase, but the Projects page is still a heading only; Clients and Contact are also headings only, and About is a minimal statement. Decide whether Projects should reuse or link into the Home gallery.
-3. **Define the contact conversion flow.** “Start a Project” currently targets an unmatched route and the contact page itself contains only a heading. No form, validation, email link, API, success/error state, or submission handling exists.
-4. **Align Season Sans weight and asset.** `font-season` currently registers the Heavy trial file at weight 900; Hero requests weight 700, and the Bold trial file exists but is not currently used. Choose the intended weight, update the face and/or class, verify loading in the browser/build, and confirm licensing/production use because the filenames identify trial fonts.
-5. **Confirm brand and content details.** The Home copy says “HASHTAG Eventz,” while the About page describes “experience-makers.” Confirm spelling, capitalization, business positioning, and final copy with the project owner.
-6. **Decide on project/client detail pages and a not-found experience.** Only list-level URLs are currently represented, and unknown paths have no dedicated fallback.
-7. **Replace scaffold metadata/docs.** The browser title remains `hashtag-v5`; README remains template text. Add appropriate title, description, social metadata, and favicon/brand guidance after requirements are known.
-
-### Engineering and quality work
-
-1. **Check visual behavior across browsers/devices.** The custom WebGL hero and gallery, video autoplay, touch fallback, and mobile performance have not been browser/device-tested in this task.
-2. **Review accessibility and reduced-motion behavior.** The navbar supports Escape-to-close and removes closed mobile links from tab order, but focus restoration/management and page-level accessibility need review. The CTA CSS reduces its transitions; the hero reduced-motion behavior only suppresses ambient touch motion. Check gallery focus/semantics and how keyboard selection state is announced.
-3. **Resolve the current lint failure.** Previous lint run reported `react-hooks/set-state-in-effect` for the synchronous menu-close state update in the route-change effect in `Navbar.tsx`; rerun lint against the latest gallery source.
-4. **Assess bundle size if performance budgets require it.** Previous build reported a roughly 928 kB minified main JS chunk. The gallery adds another Three.js renderer/shader path; consider reuse/lazy loading only after measuring the current bundle and runtime GPU costs.
-5. **Add tests as meaningful behavior is built.** There is no existing test runner or test suite. At minimum, route rendering/navigation and gallery open/close/keyboard/fallback behavior merit coverage as testing is introduced.
-6. **Remove or repurpose unused scaffold assets/styles.** `App.css` is Vite demo CSS, `src/assets` contains unused starter assets, and `public/videos/raw_hero-burn.mp4` appears unused. Confirm none are needed before removal.
-
-## Guidance for the next agent
-
-Start by confirming which unfinished route or interaction is in scope. Preserve the existing React Router structure and shared navbar unless the IA changes. For hero work, read both `Hero.tsx` and `BurnReveal.tsx` before changing behavior: the reveal is a custom shader plus CPU heat-grid simulation, and resizing, video lifecycle, pointer cleanup, and reduced-motion behavior are intertwined. Validate changes with `npm run build` and `npm run lint`; add a focused test setup only if the feature warrants it.
+Before changing the Home experience, read `Home.tsx` and the relevant child component/provider together. Gallery tiles, video showreel, and the about model are distinct experiences with different content sources and media lifecycle behavior.
