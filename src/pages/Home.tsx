@@ -15,9 +15,11 @@ gsap.registerPlugin(ScrollTrigger);
 const DARK = { bg: "#000000", fg: "#FFFFFF" };
 const FALLBACK_LIGHT = { bg: "#FFFAFA", fg: "#1A1110" };
 
-// where each fade happens, relative to the viewport (top of the trigger section)
-const FADE_START = "top 80%";
-const FADE_END = "top 25%";
+// where each fade happens, relative to the viewport (top of the trigger section).
+// A colour fade is not vestibular-type motion, so it plays even when the OS
+// has "reduce motion" on; widen the gap between these for a slower fade.
+const FADE_START = "top 90%";
+const FADE_END = "top 20%";
 
 function Home() {
   const mainRef = useRef<HTMLElement>(null);
@@ -35,7 +37,6 @@ function Home() {
       bg: css.getPropertyValue("--color-background").trim() || FALLBACK_LIGHT.bg,
       fg: css.getPropertyValue("--color-foreground").trim() || FALLBACK_LIGHT.fg,
     };
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // t: 0 = dark page, 1 = light page.
     // The background follows t directly; the text flips faster around the
@@ -51,9 +52,7 @@ function Home() {
     let toLight = 0;
     let toDark = 0;
     const update = () => {
-      const a = reduced ? (toLight >= 0.5 ? 1 : 0) : toLight; // no fades for reduced motion
-      const b = reduced ? (toDark >= 0.5 ? 1 : 0) : toDark;
-      paint(a * (1 - b));
+      paint(toLight * (1 - toDark));
     };
 
     paint(0); // Hero is dark from the very first frame
