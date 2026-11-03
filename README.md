@@ -1,6 +1,6 @@
 # HASHTAG Eventz
 
-The front-end for the HASHTAG Eventz agency and brand-experience website. The Home page is a visual, scroll-led experience with an interactive video hero, image gallery, video showreel, and animated About section.
+The front-end for the HASHTAG Eventz agency and brand-experience website. The Home page is a visual, scroll-led experience with an interactive video hero, image gallery, video showreel, animated About section, and interactive “What We Do” service showcase.
 
 > **Status:** The Home page is the most developed route. About, Projects, Clients, and Contact routes exist, but several remain placeholders. The app is currently a static client-side experience with no CMS, backend, or inquiry form integration.
 
@@ -12,7 +12,8 @@ The front-end for the HASHTAG Eventz agency and brand-experience website. The Ho
 - **Video showreel:** Eight video projects are presented in a curved perspective carousel. Navigate with drag/swipe, arrow controls, or Left/Right Arrow keys.
 - **Animated About section:** Scroll-triggered copy and metric reveals, plus an interactive 3D model.
 - **Responsive navigation:** Floating header hides while scrolling down and reappears while scrolling up; includes a mobile dropdown menu.
-- **Theme transitions:** Home scrolls from a dark hero into light Gallery/Showreel sections and back to a dark About section.
+- **Pinned service showcase:** Scroll through six services with gentle snapping, clickable/keyboard navigation, animated image transitions, floating labels, and a reflective 3D object. A plain-image fallback is shown if WebGL is unavailable.
+- **Theme transitions:** Home scrolls from a dark hero into light Gallery/Showreel sections and back to dark About and service sections.
 
 ## Technology
 
@@ -53,7 +54,7 @@ Routes are declared in `src/App.tsx`; the shared navbar appears across routes.
 
 | Path | Page | Current state |
 |---|---|---|
-| `/` | Home | Hero, Gallery, WorkShowcase, About section |
+| `/` | Home | Hero, Gallery, WorkShowcase, About section, What We Do |
 | `/about-us` | About | Minimal About content |
 | `/projects` | Projects | Placeholder heading |
 | `/clients` | Clients | Placeholder heading |
@@ -79,12 +80,17 @@ Routes are declared in `src/App.tsx`; the shared navbar appears across routes.
 
 `src/components/Home/Aboutsection.tsx` contains animated company copy, four displayed metrics, and `ModelViewer`. The model loads `public/model/abstract_shape.glb` and responds to pointer drag, pointer tilt, and scroll.
 
+### What We Do
+
+`src/components/Home/WhatWeDo.tsx` adds a pinned, scroll-driven showcase after About. It presents six services from `src/data/whatWeDo.ts`, with desktop service navigation, mobile progress buttons, arrow-key navigation, and gentle snapping between services. `src/components/providers/ServiceCanvas.tsx` renders the service images with an organic shader transition, pointer-responsive lens/parallax effects, floating service tags, and a rotating reflective 3D shape. If WebGL initialization fails, the section falls back to regular images. Service images are in `public/images/whatWeDo/`.
+
 ## Assets and site metadata
 
 - Gallery imagery: `public/GalleryAssets/01.webp`–`09.webp`
 - Showreel videos: `public/WorkAssets/`
 - Hero video: `public/videos/hero-burn.mp4`
 - 3D asset: `public/model/abstract_shape.glb`
+- What We Do service images: `public/images/whatWeDo/`
 - Logo icon: `public/logoIcon.svg`
 - Social preview: `public/og-image.jpg`
 - Fonts: `public/fonts/SeasonSans/` and Geist Variable from npm
@@ -99,7 +105,7 @@ Routes are declared in `src/App.tsx`; the shared navbar appears across routes.
 - Confirm About copy and displayed business metrics.
 - Complete Projects, Clients, About, and Contact routes; define the Contact inquiry flow.
 - Address the current lint errors: Navbar state update inside a route-change effect and `GalleryGL` refs updated during render.
-- Measure bundle and GPU/mobile performance. A recent build emitted a ~1.08 MB minified JavaScript chunk, and multiple Three.js renderers are used on Home.
+- Measure bundle and GPU/mobile performance. A recent build emitted a ~1.08 MB minified JavaScript chunk; Home now includes several Three.js-powered experiences, including the service showcase.
 - Add tests and a not-found route.
 
 For detailed architecture, behavior, and handover notes, see [context.md](./context.md).

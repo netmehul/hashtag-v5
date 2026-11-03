@@ -5,6 +5,8 @@ import Hero from "../components/Home/Hero";
 import GallerySection from "../components/Home/Gallery";
 import WorkShowcase from "../components/Home/WorkShowcase";
 import AboutSection from "../components/Home/Aboutsection";
+import WhatWeDo from "../components/Home/WhatWeDo";
+import Testimonials from "../components/Home/Testimonials";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -126,6 +128,8 @@ function Home() {
       >
         <AboutSection />
       </div>
+      <WhatWeDo />
+      <Testimonials />
     </main>
   );
 }

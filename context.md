@@ -2,7 +2,7 @@
 
 ## Project overview
 
-This repository contains the client-side website for **HASHTAG Eventz**, an events and brand-experience company. The app is built with React and TypeScript using Vite. Its current Home experience is a long-form visual landing page: dark video-reveal hero, light image gallery, light video showreel, and an animated About section that transitions back to dark.
+This repository contains the client-side website for **HASHTAG Eventz**, an events and brand-experience company. The app is built with React and TypeScript using Vite. Its current Home experience is a long-form visual landing page: dark video-reveal hero, light image gallery, light video showreel, and an animated About section followed by a pinned, scroll-driven “What We Do” showcase.
 
 The Home page is substantially more developed than the other routes. About, Projects, Clients, and Contact routes exist, but three are placeholders and About content is also present as a richer Home section. This is still a static front-end: no API, CMS, contact submission, authentication, or persistent app data is wired up.
 
@@ -12,7 +12,7 @@ The Home page is substantially more developed than the other routes. About, Proj
 - Vite 8
 - Tailwind CSS 4
 - React Router 7
-- Three.js for the hero, gallery, and 3D model
+- Three.js for the hero, galleries, service showcase, and 3D models
 - GSAP with ScrollTrigger and Flip, plus `@gsap/react`
 - Lenis for smooth scrolling
 - Geist Variable (npm package) and local Season Sans trial font assets
@@ -42,7 +42,7 @@ No test script or test files are currently present. Re-run checks after changes;
 
 | Route | Component | Current contents |
 |---|---|---|
-| `/` | `src/pages/Home.tsx` | Hero, Gallery, WorkShowcase, About section |
+| `/` | `src/pages/Home.tsx` | Hero, Gallery, WorkShowcase, About section, What We Do |
 | `/about-us` | `src/pages/About.tsx` | Minimal About page |
 | `/projects` | `src/pages/Projects.tsx` | Placeholder heading |
 | `/clients` | `src/pages/Clients.tsx` | Placeholder heading |
@@ -60,8 +60,9 @@ There is no not-found route; unmatched locations show the shared navbar without 
 2. **Gallery** — nine image tiles in a responsive bento layout.
 3. **Work in motion** — a separate 3D cylindrical showreel containing eight video entries.
 4. **About** — animated company statement, animated numerical metrics, and an interactive 3D abstract model.
+5. **What We Do** — a pinned showcase of six services, with scroll-synchronized imagery, service navigation, floating labels, and a reflective 3D object.
 
-`Home.tsx` uses GSAP ScrollTriggers to transition the page theme from dark at the hero to the light theme through Gallery and WorkShowcase, then back to dark at About. The light colors come from the CSS theme tokens in `src/index.css`. The fade switches to threshold behavior when reduced motion is requested.
+`Home.tsx` uses GSAP ScrollTriggers to transition the page theme from dark at the hero to the light theme through Gallery and WorkShowcase, then back to dark at About. The following What We Do section also uses the dark theme. The light colors come from the CSS theme tokens in `src/index.css`. The fade switches to threshold behavior when reduced motion is requested.
 
 ### Hero reveal
 
@@ -96,6 +97,17 @@ The current metrics are `13+ Years of experience`, `4000+ Successful events`, `4
 
 `src/components/providers/ModelViewer.tsx` loads `/model/abstract_shape.glb` into a transparent Three.js scene with studio environment lighting and a red rim light. The model can auto-rotate, tilt toward pointer movement, react to scroll position, and be dragged/flung. It pauses its animation loop while offscreen and removes listeners/render resources on unmount.
 
+## What We Do service showcase
+
+`src/components/Home/WhatWeDo.tsx` renders after About. Its six service records (title, description, image, two tags, and optional tag colors) are defined in `src/data/whatWeDo.ts`; the images live under `public/images/whatWeDo/`.
+
+- On desktop, a service list accompanies the image stage; on mobile, the current title and a row of labeled progress buttons provide navigation.
+- The section is pinned while scrolling through the services. Scroll progress selects the active service and snaps gently to service positions, leaving small entry and exit zones unsnapped.
+- Arrow keys move between services. Navigation buttons scroll to the requested service using GSAP ScrollTo.
+- `src/components/providers/ServiceCanvas.tsx` draws the photos in a WebGL shader with an organic transition between adjacent images, pointer-responsive lens distortion, and subtle parallax.
+- Two animated tags overlay the image, and a reflective torus-knot shape changes with the active service. The WebGL render loop runs only while the canvas is near the viewport; coarse pointers use lower-detail geometry and do not drive the hover interaction.
+- If WebGL renderer creation fails, `WhatWeDo` switches to a plain image crossfade. Individual texture-load failures are logged by `ServiceCanvas`.
+
 ## Shared navigation and CTAs
 
 `src/components/Navbar.tsx` renders a fixed header with `/logoIcon.svg`, desktop links, and a mobile dropdown:
@@ -114,6 +126,7 @@ The current metrics are `13+ Years of experience`, `4000+ Successful events`, `4
 - Hero video: `public/videos/hero-burn.mp4`; an additional `raw_hero-burn.mp4` is present but its usage is unconfirmed.
 - Gallery images: `public/GalleryAssets/`.
 - Showreel videos: `public/WorkAssets/`.
+- What We Do images: `public/images/whatWeDo/` (six service photos).
 - 3D model: `public/model/abstract_shape.glb`.
 - Brand assets: `public/logoIcon.svg`, `public/logoFull.svg`, `public/favicon.svg`, `public/icons.svg`.
 - Season Sans files: `public/fonts/SeasonSans/`; Geist comes from `@fontsource-variable/geist`.
@@ -130,6 +143,7 @@ src/
   App.css
   data/
     workData.ts                 Video showreel content
+    whatWeDo.ts                 Six service records and image/tag data
   components/
     Navbar.tsx
     CTAButton.tsx
@@ -139,9 +153,11 @@ src/
       Gallery.tsx               Nine-image selectable gallery
       WorkShowcase.tsx          Video carousel
       Aboutsection.tsx          About copy, metrics, and model composition
+      WhatWeDo.tsx              Pinned service showcase
     providers/
       GalleryGL.tsx
       ModelViewer.tsx
+      ServiceCanvas.tsx         WebGL service images, tags, and chrome object
       HorizontalScroll.tsx      Reusable helper; current call sites not confirmed
   lib/
     SmoothScroll.tsx
@@ -154,6 +170,7 @@ src/
 public/
   GalleryAssets/
   WorkAssets/
+  images/whatWeDo/              Six service showcase images
   fonts/SeasonSans/
   model/
   videos/
@@ -168,8 +185,8 @@ public/
 5. Confirm the About metrics and copy are accurate and approved.
 6. Build out the non-Home route pages and actual Contact inquiry submission flow. Add a not-found page.
 7. Resolve the three current lint errors (Navbar set-state-in-effect; GalleryGL render-time ref writes).
-8. Reassess bundle size and GPU/mobile performance. The latest build emits a roughly 1.08 MB minified JS chunk, and the Home page contains multiple Three.js renderers.
-9. Review keyboard, focus, reduced-motion, and fallback behaviors for navigation, gallery, showreel, and 3D model.
+8. Reassess bundle size and GPU/mobile performance. The latest build emits a roughly 1.08 MB minified JS chunk; Home has multiple Three.js experiences, including the service canvas.
+9. Review keyboard, focus, reduced-motion, and fallback behaviors for navigation, gallery, showreel, service showcase, and 3D models.
 10. Add tests; none are currently configured.
 
-Before changing the Home experience, read `Home.tsx` and the relevant child component/provider together. Gallery tiles, video showreel, and the about model are distinct experiences with different content sources and media lifecycle behavior.
+Before changing the Home experience, read `Home.tsx` and the relevant child component/provider together. Gallery tiles, video showreel, the service showcase, and the About model are distinct experiences with different content sources and media lifecycle behavior.
