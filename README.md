@@ -14,6 +14,7 @@ The front-end for the HASHTAG Eventz agency and brand-experience website. The Ho
 - **Responsive navigation:** Floating header hides while scrolling down and reappears while scrolling up; includes a mobile dropdown menu.
 - **Pinned service showcase:** Scroll through six services with gentle snapping, clickable/keyboard navigation, animated image transitions, floating labels, and a reflective 3D object. A plain-image fallback is shown if WebGL is unavailable.
 - **Testimonials board:** Five testimonial cards animate into a responsive board; cards can be dragged on desktop. The component supports optional photos or muted video, though the current testimonial content is placeholder text without media.
+- **Site-wide footer:** A branded footer with route links, service list, local clocks for Dubai, Abu Dhabi, and Doha, an animated “Start a Project” CTA, and a back-to-top control. Its low-resolution Three.js glow reacts to pointer movement and falls back to a plain black footer if WebGL is unavailable.
 - **Theme transitions:** Home scrolls from a dark hero into light Gallery/Showreel sections and back to dark About, service, and testimonial sections.
 
 ## Technology
@@ -51,7 +52,7 @@ No test runner or test script is configured yet.
 
 ## Routes
 
-Routes are declared in `src/App.tsx`; the shared navbar appears across routes.
+Routes are declared in `src/App.tsx`; the shared navbar and footer appear across routes.
 
 | Path | Page | Current state |
 |---|---|---|
@@ -62,6 +63,10 @@ Routes are declared in `src/App.tsx`; the shared navbar appears across routes.
 | `/contact-us` | Contact | Placeholder “Start Project” heading |
 
 **Known mismatch:** The navbar currently targets `/about` and `/contact`, while the registered routes are `/about-us` and `/contact-us`. Unknown paths have no dedicated not-found page.
+
+### Global footer
+
+`src/components/Footer.tsx` is rendered by `src/App.tsx` after the route content, so it appears on every route. It includes internal navigation, the shared service list, optional email/phone/social links (currently unconfigured), live local-time clocks, a magnetic project CTA, an animated services marquee, cursor-lit wordmark, and back-to-top control. `src/components/providers/FooterGlow.tsx` supplies a low-resolution Three.js atmospheric glow that animates only while visible; if WebGL creation fails, the footer remains black.
 
 ## Home page components
 
@@ -97,6 +102,7 @@ Routes are declared in `src/App.tsx`; the shared navbar appears across routes.
 - 3D asset: `public/model/abstract_shape.glb`
 - What We Do service images: `public/images/whatWeDo/`
 - Optional testimonial media: paths can be supplied in `src/data/testimonials.ts`; no testimonial media is currently configured.
+- Footer contact details and social profiles are currently blank in `src/components/Footer.tsx`.
 - Logo icon: `public/logoIcon.svg`
 - Social preview: `public/og-image.jpg`
 - Fonts: `public/fonts/SeasonSans/` and Geist Variable from npm
@@ -110,9 +116,10 @@ Routes are declared in `src/App.tsx`; the shared navbar appears across routes.
 - Verify the showreel poster paths: `workData.ts` references `/images/work/*.jpg`, but those posters were not present in the current asset inventory.
 - Confirm About copy and displayed business metrics.
 - Replace testimonial placeholder quotes, names, and companies with approved customer testimonials; add media only when available and approved.
+- Configure the footer email, phone, and social links when approved contact details are available.
 - Complete Projects, Clients, About, and Contact routes; define the Contact inquiry flow.
 - Address the current lint errors: Navbar state update inside a route-change effect and `GalleryGL` refs updated during render.
-- Measure bundle and GPU/mobile performance. A recent build emitted a ~1.08 MB minified JavaScript chunk; Home now includes several Three.js-powered experiences, including the service showcase.
+- Measure bundle and GPU/mobile performance. A recent build emitted a ~1.08 MB minified JavaScript chunk; the site includes several Three.js-powered experiences, including the service showcase and footer glow.
 - Add tests and a not-found route.
 
 For detailed architecture, behavior, and handover notes, see [context.md](./context.md).

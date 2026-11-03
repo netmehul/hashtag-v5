@@ -2,7 +2,7 @@
 
 ## Project overview
 
-This repository contains the client-side website for **HASHTAG Eventz**, an events and brand-experience company. The app is built with React and TypeScript using Vite. Its current Home experience is a long-form visual landing page: dark video-reveal hero, light image gallery, light video showreel, animated About section, pinned “What We Do” showcase, and a testimonials board.
+This repository contains the client-side website for **HASHTAG Eventz**, an events and brand-experience company. The app is built with React and TypeScript using Vite. Its current Home experience is a long-form visual landing page: dark video-reveal hero, light image gallery, light video showreel, animated About section, pinned “What We Do” showcase, and a testimonials board. A shared animated footer follows route content on every page.
 
 The Home page is substantially more developed than the other routes. About, Projects, Clients, and Contact routes exist, but three are placeholders and About content is also present as a richer Home section. This is still a static front-end: no API, CMS, contact submission, authentication, or persistent app data is wired up.
 
@@ -27,9 +27,9 @@ npm run preview   # Serve dist/
 
 ### Latest verification
 
-At this handover, `npm run build` succeeds. Vite reports a 1,080.77 kB minified JavaScript chunk (311.27 kB gzip), above its 500 kB advisory threshold.
+The last recorded `npm run build` succeeded before the current Footer/FooterGlow additions. That build emitted a 1,080.77 kB minified JavaScript chunk (311.27 kB gzip), above its 500 kB advisory threshold; rebuild to verify the current bundle.
 
-`npm run lint` fails with three React Hooks diagnostics:
+The last recorded `npm run lint` failed with three React Hooks diagnostics:
 
 - `src/components/Navbar.tsx:20`: synchronous state update inside the route-change effect (`react-hooks/set-state-in-effect`).
 - `src/components/providers/GalleryGL.tsx:112` and `:114`: refs updated during render (`react-hooks/refs`).
@@ -38,7 +38,7 @@ No test script or test files are currently present. Re-run checks after changes;
 
 ## Information architecture and routes
 
-`src/App.tsx` creates a `BrowserRouter`, renders the shared `Navbar`, then renders the matched page:
+`src/App.tsx` creates a `BrowserRouter`, renders the shared `Navbar`, matched route content, and then the shared `Footer`:
 
 | Route | Component | Current contents |
 |---|---|---|
@@ -48,9 +48,11 @@ No test script or test files are currently present. Re-run checks after changes;
 | `/clients` | `src/pages/Clients.tsx` | Placeholder heading |
 | `/contact-us` | `src/pages/Contact.tsx` | “Start Project” heading |
 
-There is no not-found route; unmatched locations show the shared navbar without page content.
+There is no not-found route; unmatched locations show the shared navbar and footer without page content.
 
 **Known route mismatch:** Navbar links currently use `/about` and `/contact`; the router only registers `/about-us` and `/contact-us`. Projects and Clients paths match. Align paths or intentionally add aliases.
+
+The global footer uses the registered `/about-us` and `/contact-us` destinations, so its About and Contact links do not share the Navbar's current mismatch.
 
 ## Current Home page flow
 
@@ -126,6 +128,19 @@ The current metrics are `13+ Years of experience`, `4000+ Successful events`, `4
 
 `src/components/CTAButton.tsx` renders an internal React Router link, external anchor, or native button. It supports `primary`/`secondary`/`ghost`, `sm`/`md`/`lg`, `fit`/`full`, and optional arrow icon. CTA styles and reduced-transition support are in `src/index.css`.
 
+## Global footer
+
+`src/components/Footer.tsx` is rendered after `Routes` in `src/App.tsx`, so it appears on all routes, including pages that are otherwise placeholders. It currently provides:
+
+- A marquee of the six services, whose direction and speed respond to scroll velocity while the footer is visible.
+- A “Got a bold idea?” CTA with a rotating SVG text ring, magnetic pointer response, and link to `/contact-us`.
+- A responsive information grid with tagline, route links, service names, and live local clocks for Dubai, Abu Dhabi, and Doha.
+- Optional email, phone, and social links. These are currently empty/unconfigured and therefore hidden.
+- A large outlined HASHTAG EVENTZ wordmark with a cursor-following red spotlight, current-year copyright, and back-to-top button.
+- Scroll-triggered reveals and subtle parallax; these motion effects are skipped when reduced motion is requested.
+
+`src/components/providers/FooterGlow.tsx` draws the footer background using a low-resolution Three.js shader: drifting red clouds, film grain, and a pointer-following glow. Its render loop runs only while the footer is near/in view and stops animating under reduced motion. If WebGL setup fails, the component exits without an overlay and the footer stays plain black.
+
 ## Metadata, assets, and styling
 
 - `index.html` sets the title to **HASHTAG Eventz**, uses `/logoIcon.svg` as favicon, and sets Open Graph and Twitter title/description/image metadata.
@@ -134,6 +149,7 @@ The current metrics are `13+ Years of experience`, `4000+ Successful events`, `4
 - Gallery images: `public/GalleryAssets/`.
 - Showreel videos: `public/WorkAssets/`.
 - What We Do images: `public/images/whatWeDo/` (six service photos).
+- Footer contact email, phone, and social links are not configured; set these in `src/components/Footer.tsx` when approved details are available.
 - 3D model: `public/model/abstract_shape.glb`.
 - Brand assets: `public/logoIcon.svg`, `public/logoFull.svg`, `public/favicon.svg`, `public/icons.svg`.
 - Season Sans files: `public/fonts/SeasonSans/`; Geist comes from `@fontsource-variable/geist`.
@@ -155,6 +171,7 @@ src/
   components/
     Navbar.tsx
     CTAButton.tsx
+    Footer.tsx                 Shared animated footer, contact info, clocks, and navigation
     Home/
       Hero.tsx
       BurnReveal.tsx
@@ -167,6 +184,7 @@ src/
       GalleryGL.tsx
       ModelViewer.tsx
       ServiceCanvas.tsx         WebGL service images, tags, and chrome object
+      FooterGlow.tsx            Low-resolution WebGL footer atmosphere
       HorizontalScroll.tsx      Reusable helper; current call sites not confirmed
   lib/
     SmoothScroll.tsx
@@ -194,9 +212,10 @@ public/
 5. Confirm the About metrics and copy are accurate and approved.
 6. Replace testimonial placeholder quotes, names, and companies with approved customer content. Configure optional media only when real approved assets are available.
 7. Build out the non-Home route pages and actual Contact inquiry submission flow. Add a not-found page.
-8. Resolve the three current lint errors (Navbar set-state-in-effect; GalleryGL render-time ref writes).
-9. Reassess bundle size and GPU/mobile performance. The latest build emits a roughly 1.08 MB minified JS chunk; Home has multiple Three.js experiences, including the service canvas.
-10. Review keyboard, focus, reduced-motion, and fallback behaviors for navigation, gallery, showreel, service showcase, testimonials, and 3D models.
-11. Add tests; none are currently configured.
+8. Configure footer email, phone, and social links with approved contact details.
+9. Resolve the three current lint errors (Navbar set-state-in-effect; GalleryGL render-time ref writes).
+10. Reassess bundle size and GPU/mobile performance. The latest recorded build emits a roughly 1.08 MB minified JS chunk; the site has multiple Three.js experiences, including the service canvas and footer glow.
+11. Review keyboard, focus, reduced-motion, and fallback behaviors for navigation, gallery, showreel, service showcase, testimonials, footer, and 3D models.
+12. Add tests; none are currently configured.
 
 Before changing the Home experience, read `Home.tsx` and the relevant child component/provider together. Gallery tiles, video showreel, the service showcase, testimonials, and the About model are distinct experiences with different content sources and media lifecycle behavior.
