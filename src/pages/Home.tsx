@@ -21,6 +21,28 @@ const FALLBACK_LIGHT = { bg: "#FFFAFA", fg: "#1A1110" };
 const FADE_START = "top 90%";
 const FADE_END = "top 20%";
 
+/* Production CSS minifies colours into names (#FFFAFA -> "snow"), which cannot be
+   blended. Resolve ANY css colour (hex, name, rgb, hsl, oklch...) to plain
+   [r, g, b] numbers first, then mix those ourselves. */
+type RGB = [number, number, number];
+let probe: CanvasRenderingContext2D | null = null;
+const toRgb = (color: string): RGB => {
+  if (!probe) {
+    const c = document.createElement("canvas");
+    c.width = c.height = 1;
+    probe = c.getContext("2d", { willReadFrequently: true });
+  }
+  if (!probe) return [0, 0, 0];
+  probe.clearRect(0, 0, 1, 1);
+  probe.fillStyle = "#000";
+  probe.fillStyle = color; // ignored if the browser can't parse it
+  probe.fillRect(0, 0, 1, 1);
+  const d = probe.getImageData(0, 0, 1, 1).data;
+  return [d[0], d[1], d[2]];
+};
+const mix = (a: RGB, b: RGB, t: number) =>
+  `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(" ")})`;
+
 function Home() {
   const mainRef = useRef<HTMLElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
@@ -33,18 +55,19 @@ function Home() {
     if (!main || !gallery || !about) return;
 
     const css = getComputedStyle(main);
-    const LIGHT = {
-      bg: css.getPropertyValue("--color-background").trim() || FALLBACK_LIGHT.bg,
-      fg: css.getPropertyValue("--color-foreground").trim() || FALLBACK_LIGHT.fg,
+    const light = {
+      bg: toRgb(css.getPropertyValue("--color-background").trim() || FALLBACK_LIGHT.bg),
+      fg: toRgb(css.getPropertyValue("--color-foreground").trim() || FALLBACK_LIGHT.fg),
     };
+    const dark = { bg: toRgb(DARK.bg), fg: toRgb(DARK.fg) };
 
     // t: 0 = dark page, 1 = light page.
     // The background follows t directly; the text flips faster around the
     // middle so it never sits grey-on-grey while the background is mid-fade.
     const paint = (t: number) => {
       const f = gsap.utils.clamp(0, 1, (t - 0.4) / 0.2);
-      main.style.setProperty("--color-background", gsap.utils.interpolate(DARK.bg, LIGHT.bg, t));
-      main.style.setProperty("--color-foreground", gsap.utils.interpolate(DARK.fg, LIGHT.fg, f));
+      main.style.setProperty("--color-background", mix(dark.bg, light.bg, t));
+      main.style.setProperty("--color-foreground", mix(dark.fg, light.fg, f));
     };
 
     // progress (0..1) of each fade. Page is light only between the two:
@@ -82,7 +105,7 @@ function Home() {
   }, []);
 
   return (
-    <main ref={mainRef} className="min-h-screen overflow-hidden">
+    <main ref={mainRef} className="min-h-screen">
       <Hero />
 
       {/* paints the gallery with the live theme colours and overrides any
