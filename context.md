@@ -2,7 +2,7 @@
 
 ## Project overview
 
-This repository contains the client-side website for **HASHTAG Eventz**, an events and brand-experience company. The app is built with React and TypeScript using Vite. Its current Home experience is a long-form visual landing page: dark video-reveal hero, light image gallery, light video showreel, and an animated About section followed by a pinned, scroll-driven “What We Do” showcase.
+This repository contains the client-side website for **HASHTAG Eventz**, an events and brand-experience company. The app is built with React and TypeScript using Vite. Its current Home experience is a long-form visual landing page: dark video-reveal hero, light image gallery, light video showreel, animated About section, pinned “What We Do” showcase, and a testimonials board.
 
 The Home page is substantially more developed than the other routes. About, Projects, Clients, and Contact routes exist, but three are placeholders and About content is also present as a richer Home section. This is still a static front-end: no API, CMS, contact submission, authentication, or persistent app data is wired up.
 
@@ -42,7 +42,7 @@ No test script or test files are currently present. Re-run checks after changes;
 
 | Route | Component | Current contents |
 |---|---|---|
-| `/` | `src/pages/Home.tsx` | Hero, Gallery, WorkShowcase, About section, What We Do |
+| `/` | `src/pages/Home.tsx` | Hero, Gallery, WorkShowcase, About section, What We Do, Testimonials |
 | `/about-us` | `src/pages/About.tsx` | Minimal About page |
 | `/projects` | `src/pages/Projects.tsx` | Placeholder heading |
 | `/clients` | `src/pages/Clients.tsx` | Placeholder heading |
@@ -61,8 +61,9 @@ There is no not-found route; unmatched locations show the shared navbar without 
 3. **Work in motion** — a separate 3D cylindrical showreel containing eight video entries.
 4. **About** — animated company statement, animated numerical metrics, and an interactive 3D abstract model.
 5. **What We Do** — a pinned showcase of six services, with scroll-synchronized imagery, service navigation, floating labels, and a reflective 3D object.
+6. **Testimonials** — a responsive board of quote cards that animate into view and can be dragged on desktop.
 
-`Home.tsx` uses GSAP ScrollTriggers to transition the page theme from dark at the hero to the light theme through Gallery and WorkShowcase, then back to dark at About. The following What We Do section also uses the dark theme. The light colors come from the CSS theme tokens in `src/index.css`. The fade switches to threshold behavior when reduced motion is requested.
+`Home.tsx` uses GSAP ScrollTriggers to transition the page theme from dark at the hero to the light theme through Gallery and WorkShowcase, then back to dark at About. What We Do and Testimonials follow in the dark theme. The light colors come from the CSS theme tokens in `src/index.css`. The fade switches to threshold behavior when reduced motion is requested.
 
 ### Hero reveal
 
@@ -96,6 +97,12 @@ The eight entries are defined in `src/data/workData.ts`, with title, category, y
 The current metrics are `13+ Years of experience`, `4000+ Successful events`, `40+ Brand collaborations`, and `30+ Daily order from customer`. Treat these as supplied copy/data and confirm factual accuracy and wording with the project owner.
 
 `src/components/providers/ModelViewer.tsx` loads `/model/abstract_shape.glb` into a transparent Three.js scene with studio environment lighting and a red rim light. The model can auto-rotate, tilt toward pointer movement, react to scroll position, and be dragged/flung. It pauses its animation loop while offscreen and removes listeners/render resources on unmount.
+
+## Testimonials
+
+`src/components/Home/Testimonials.tsx` renders after What We Do. It builds a responsive one-, two-, or three-column board of testimonial notes using GSAP/ScrollTrigger entrance animations. On desktop devices with a fine pointer, notes become draggable within the board after their entrance animation completes. Reduced-motion preferences suppress the entrance motion.
+
+`src/data/testimonials.ts` defines the `Testimonial` shape and five current entries. Each entry has a quote, name, role, and company. Optional image and video fields are supported; videos play muted on hover and can be toggled by tap on touch screens. The current entries have no enabled media, and the file explicitly identifies all testimonial copy and identity details as placeholder content that must be replaced with approved real material before publication.
 
 ## What We Do service showcase
 
@@ -144,6 +151,7 @@ src/
   data/
     workData.ts                 Video showreel content
     whatWeDo.ts                 Six service records and image/tag data
+    testimonials.ts             Testimonial types and placeholder content
   components/
     Navbar.tsx
     CTAButton.tsx
@@ -154,6 +162,7 @@ src/
       WorkShowcase.tsx          Video carousel
       Aboutsection.tsx          About copy, metrics, and model composition
       WhatWeDo.tsx              Pinned service showcase
+      Testimonials.tsx          Animated, draggable testimonial board
     providers/
       GalleryGL.tsx
       ModelViewer.tsx
@@ -183,10 +192,11 @@ public/
 3. Fix/verify showreel poster paths under `/images/work/`; those files were not found in the current public asset inventory.
 4. Choose intended Season Sans weight and align font-face declaration and utility weight; verify loading and font license.
 5. Confirm the About metrics and copy are accurate and approved.
-6. Build out the non-Home route pages and actual Contact inquiry submission flow. Add a not-found page.
-7. Resolve the three current lint errors (Navbar set-state-in-effect; GalleryGL render-time ref writes).
-8. Reassess bundle size and GPU/mobile performance. The latest build emits a roughly 1.08 MB minified JS chunk; Home has multiple Three.js experiences, including the service canvas.
-9. Review keyboard, focus, reduced-motion, and fallback behaviors for navigation, gallery, showreel, service showcase, and 3D models.
-10. Add tests; none are currently configured.
+6. Replace testimonial placeholder quotes, names, and companies with approved customer content. Configure optional media only when real approved assets are available.
+7. Build out the non-Home route pages and actual Contact inquiry submission flow. Add a not-found page.
+8. Resolve the three current lint errors (Navbar set-state-in-effect; GalleryGL render-time ref writes).
+9. Reassess bundle size and GPU/mobile performance. The latest build emits a roughly 1.08 MB minified JS chunk; Home has multiple Three.js experiences, including the service canvas.
+10. Review keyboard, focus, reduced-motion, and fallback behaviors for navigation, gallery, showreel, service showcase, testimonials, and 3D models.
+11. Add tests; none are currently configured.
 
-Before changing the Home experience, read `Home.tsx` and the relevant child component/provider together. Gallery tiles, video showreel, the service showcase, and the About model are distinct experiences with different content sources and media lifecycle behavior.
+Before changing the Home experience, read `Home.tsx` and the relevant child component/provider together. Gallery tiles, video showreel, the service showcase, testimonials, and the About model are distinct experiences with different content sources and media lifecycle behavior.
