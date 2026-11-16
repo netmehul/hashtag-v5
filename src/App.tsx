@@ -9,8 +9,10 @@ import Projects from "./pages/Projects";
 import Clients from "./pages/Clients";
 import ContactUs from "./pages/Contact";
 import Footer from "./components/Footer";
+import { useHeadingEffects } from "./lib/headingEffects";
 
 function App() {
+  useHeadingEffects();
   return (
     <BrowserRouter>
       <Navbar />

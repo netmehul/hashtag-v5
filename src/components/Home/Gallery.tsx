@@ -109,36 +109,22 @@ export default function GallerySection() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(".gallery-heading-line", {
-        yPercent: 110,
-        duration: 1.2,
-        ease: "expo.out",
-        stagger: 0.12,
-        scrollTrigger: { trigger: ".gallery-header", start: "top 80%" },
-      });
-    }, sectionRef);
-    return () => ctx.revert();
-  }, []);
-
   return (
-      <section
-        ref={sectionRef}
-        className="relative w-screen overflow-x-clip px-[5vw] py-24 text-foreground md:py-32"
-      >
+    <section
+      ref={sectionRef}
+      className="relative w-screen overflow-x-clip px-[5vw] py-24 text-foreground md:py-32"
+    >
       {/* Header */}
-      <header className="gallery-header mb-14 flex flex-col gap-8 md:mb-20 md:flex-row md:items-end md:justify-between">
+      <header className="mb-14 flex flex-col gap-8 md:mb-20 md:flex-row md:items-end md:justify-between">
         <div>
           {/* <p className="font-mono text-xs uppercase tracking-[0.25em] opacity-60">(Gallery)</p> */}
-          <h2 className="mt-6 text-[clamp(2.25rem,7vw,8rem)] font-light uppercase leading-[0.88] tracking-tight">
-            <span className="block overflow-hidden pb-[0.08em]">
-              <span className="gallery-heading-line block">Glimpses of</span>
-            </span>
-            <span className="block overflow-hidden pb-[0.08em]">
-              <span className="gallery-heading-line block">our excellence</span>
-            </span>
+          {/* The reveal + red spotlight come from data-h2-effect (src/lib/headingEffects.ts).
+              Keep this heading as plain text: no mask wrappers, no extra GSAP on it. */}
+          <h2
+            data-h2-effect
+            className="mt-6 text-[clamp(2.25rem,7vw,8rem)] font-light uppercase leading-[0.88] tracking-tight"
+          >
+            Glimpses of <br /> our excellence
           </h2>
         </div>
         <div className="max-w-xs text-sm leading-relaxed opacity-60 flex flex-col gap-12">
@@ -240,7 +226,7 @@ export default function GallerySection() {
               </h3>
 
               <p className="gallery-ui mt-4 py-3 hidden max-w-sm text-sm leading-relaxed opacity-60 md:block" style={{ opacity: 0 }}>
-                {activeItem.text} 5555
+                {activeItem.text}
               </p>
             </div>
 

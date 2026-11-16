@@ -257,12 +257,12 @@ export default function WorkShowcase() {
       className="relative w-screen overflow-x-clip bg-background py-24 text-foreground md:py-32"
     >
       {/* Header */}
-      <header className="showcase-header mb-10 flex flex-col gap-8 px-[5vw] md:mb-2 md:flex-row md:items-end md:justify-center">
+      <header className=" mb-10 flex flex-col gap-8 px-[5vw] md:mb-2 md:flex-row md:items-end md:justify-center">
         <div>
           {/* <p className="font-mono text-xs uppercase tracking-[0.25em] opacity-60">(Showreel)</p> */}
-          <h2 className="mt-6 text-[clamp(1.75rem,7vw,6rem)] font-light uppercase leading-[0.88] tracking-tight">
+          <h2 data-h2-effect className="mt-6 text-[clamp(1.75rem,7vw,6rem)] font-light uppercase leading-[0.88] tracking-tight">
             <span className="block overflow-hidden pb-[0.08em]">
-              <span className="showcase-heading-line block">Work in motion</span>
+              <span className="block">Work in motion</span>
             </span>
           </h2>
         </div>

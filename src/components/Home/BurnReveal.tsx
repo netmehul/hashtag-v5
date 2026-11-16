@@ -6,7 +6,7 @@ import * as THREE from 'three'
  * BurnReveal
  * ----------
  * A full-size WebGL overlay for a hero section. Where the cursor is, the page
- * is cut away with a soft, organic (slightly wobbling) edge and a background
+ * is cut away with a smooth, crisp, gently wobbling edge and a background
  * video shows through. The hole is opaque, so the hero text underneath is
  * fully hidden there: only video is visible. No colour on the edge.
  *
@@ -86,13 +86,15 @@ const FRAG = /* glsl */ `
     vec2 px = vUv * uRes;
     float heat = texture2D(uHeat, vec2(vUv.x, 1.0 - vUv.y)).r;
 
-    // Slow organic wobble = shape of the edge. Very little fine tearing = smooth.
-    float shape = fbm(px / 110.0 + vec2(0.0, uTime * 0.08));
-    float tear  = fbm(px / 26.0);
-    float t = heat + (shape - 0.5) * 0.46 + (tear - 0.5) * 0.05;
+    // Two very low-frequency noise layers = a gentle, flowing outline.
+    // No fine detail anywhere, so the contour stays a smooth curve (no jagged tears).
+    const float WOBBLE = 0.22; // 0.0 = perfect circle, higher = more organic
+    float shape = noise(px / 260.0 + vec2(0.0, uTime * 0.06)) * 0.65
+                + noise(px / 130.0 + vec2(uTime * 0.05, 0.0)) * 0.35;
+    float t = heat + (shape - 0.5) * WOBBLE;
 
     const float THR = 0.5;
-    float aa   = max(fwidth(t) * 0.75, 0.0008); // hard edge, ~1px anti-aliasing only
+    float aa   = max(fwidth(t), 0.0008); // crisp edge, ~1px of smooth anti-aliasing
     float hole = smoothstep(THR - aa, THR + aa, t);
 
     // neutral dark stand-in until the video has loaded

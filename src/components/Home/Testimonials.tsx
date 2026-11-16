@@ -49,7 +49,7 @@ function Media({ t }: { t: Testimonial }) {
 
     return (
       <div
-        className="group/media relative aspect-[4/3] w-full overflow-hidden bg-neutral-900"
+        className="group/media relative aspect-4/3 w-full overflow-hidden bg-neutral-900"
         onPointerEnter={(e: PointerEvent) => e.pointerType === "mouse" && play()}
         onPointerLeave={(e: PointerEvent) => e.pointerType === "mouse" && stop()}
         onClick={() => {
@@ -87,7 +87,7 @@ function Media({ t }: { t: Testimonial }) {
 
   if (t.image) {
     return (
-      <div className="group/media aspect-[4/3] w-full overflow-hidden bg-neutral-900">
+      <div className="group/media aspect-4/3 w-full overflow-hidden bg-neutral-900">
         <img
           src={t.image}
           alt=""
@@ -284,9 +284,9 @@ export default function Testimonials() {
       aria-label="Testimonials"
       className="relative isolate w-full overflow-hidden bg-background px-[5vw] py-[8svh] text-foreground md:py-[12svh]"
     >
-      <h2 className="mb-[4svh] text-[clamp(1.75rem,6vw,5rem)] text-center font-light uppercase leading-[0.88] tracking-tight md:mb-[7svh]">
+      <h2 data-h2-effect className="mb-[4svh] text-[clamp(1.75rem,6vw,5rem)] text-center font-light uppercase leading-[0.88] tracking-tight md:mb-[7svh]">
         <span className="block overflow-hidden pb-[0.08em]">
-          <span className="tm-heading block">What They Say</span>
+          <span className="block">What They Say</span>
         </span>
       </h2>
 
@@ -301,7 +301,7 @@ export default function Testimonials() {
             so the edge fade mask only touches the board and never the cards. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 border border-foreground/15 bg-foreground/[0.03] mask-l-from-75% mask-r-from-75% mask-t-from-75% mask-b-from-75%"
+          className="pointer-events-none absolute inset-0 -z-10 border border-foreground/15 bg-foreground/3 mask-l-from-75% mask-r-from-75% mask-t-from-75% mask-b-from-75%"
           style={{
             backgroundImage:
               "radial-gradient(color-mix(in srgb, currentColor 20%, transparent) 1px, transparent 1px)",

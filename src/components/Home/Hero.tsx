@@ -29,16 +29,19 @@ function Hero() {
             <div className="@container min-h-[75svh] relative z-10 w-full flex flex-col items-center justify-center md:min-h-[80svh] gap-4 select-none md:px-12">
                 <h1
                     className="
-                        font-season font-bold uppercase text-center whitespace-nowrap
-                        text-[20.83cqw] tracking-[-0.03em] leading-none
+                        font-season font-normal uppercase text-white text-center whitespace-nowrap
+                        text-[18.83cqw] tracking-[-0.03em] leading-none
                         [text-box:trim-both_cap_alphabetic]
                         md:mb-10
                     ">
+                        <span className="font-hash text-accent">
+                            #
+                        </span>
                     Hashtag
                 </h1>
                 <p
                     className="
-                        font-body uppercase text-center whitespace-nowrap
+                        font-body uppercase text-white text-center whitespace-nowrap
                         mt-[1.5cqw]
                         text-[clamp(1rem,3.2cqw,4rem)]
                         tracking-[1em] pl-[0.4em]
@@ -49,7 +52,7 @@ function Hero() {
 
             <BurnReveal
                 containerRef={sectionRef}
-                videoSrc="/videos/hero-burn.mp4"
+                videoSrc="/videos/V2hero-burn.mp4"
                 radius={360}
                 decay={0.5}
             />

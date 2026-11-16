@@ -51,21 +51,6 @@ export default function WhatWeDo() {
     []
   );
 
-  const tags = useMemo(
-    () => services.map((s) => s.tags),
-    []
-  );
-
-  const tagColors = useMemo(
-    () =>
-      services.some((s) => s.tagColors)
-        ? services.map(
-            (s) => s.tagColors ?? (["#ff2e4d", "#8f8f1c"] as [string, string])
-          )
-        : undefined,
-    []
-  );
-
   const current = services[active];
 
   /* -------------------------------------------------------
@@ -146,24 +131,6 @@ export default function WhatWeDo() {
           }
         },
       });
-
-      /*
-        Heading animation
-      */
-
-      gsap.from(".wwd-heading-line", {
-        yPercent: 110,
-
-        duration: 1.2,
-
-        ease: "expo.out",
-
-        scrollTrigger: {
-          trigger: sectionRef.current,
-
-          start: "top 85%",
-        },
-      });
     }, sectionRef);
 
     return () => {
@@ -174,7 +141,7 @@ export default function WhatWeDo() {
   }, []);
 
   /* -------------------------------------------------------
-     MOBILE COPY ANIMATION
+     CAPTION / MOBILE TITLE ANIMATION
   ------------------------------------------------------- */
 
   useEffect(() => {
@@ -183,7 +150,7 @@ export default function WhatWeDo() {
     ).matches;
 
     const tween = gsap.fromTo(
-      ".wwd-m-copy",
+      ".wwd-m-copy, .wwd-caption",
 
       {
         opacity: 0,
@@ -313,73 +280,97 @@ export default function WhatWeDo() {
           md:gap-[2.5vw]
           md:pb-[5vh]
           md:pt-[3vh]
+          
         "
       >
-        {/* Image Stage */}
+        {/* Image column: image + two-line caption underneath */}
 
         <div
           className="
             order-1
-            h-[42svh]
+            flex
+            h-[38svh]
+            
             shrink-0
+            flex-col
+            gap-4
             md:order-2
             md:col-span-7
             md:h-auto
             md:min-h-0
-            md:max-w-[46svw]
+            md:py-32
+            md:max-w-[40svw]
             md:flex-1
             md:shrink
           "
         >
-          {webgl ? (
-            <ServiceCanvas
-              images={images}
-              progress={progress}
-              active={active}
-              tags={tags}
-              tagColors={tagColors}
-              label={current.title}
-              onFail={() => setWebgl(false)}
-              className="h-full w-full"
-            />
-          ) : (
-            <div
+          <div className="min-h-0 flex-1">
+            {webgl ? (
+              <ServiceCanvas
+                images={images}
+                progress={progress}
+                label={current.title}
+                onFail={() => setWebgl(false)}
+                className="h-full w-full"
+              />
+            ) : (
+              <div
+                className="
+                  relative
+                  h-full
+                  w-full
+                  overflow-hidden
+                  bg-neutral-200
+                "
+              >
+                {services.map((s, i) => (
+                  <img
+                    key={s.id}
+                    src={s.image}
+                    alt={
+                      i === active
+                        ? s.title
+                        : ""
+                    }
+                    draggable={false}
+                    className={`
+                      absolute
+                      inset-0
+                      h-[full]
+                      w-full
+                      object-cover
+                      transition-opacity
+                      duration-700
+                      ${
+                        i === active
+                          ? "opacity-100"
+                          : "opacity-0"
+                      }
+                    `}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop caption (mobile has its own below the title) */}
+          <div className="hidden shrink-0 md:block">
+            <p
+              aria-live="polite"
               className="
-                relative
-                h-full
-                w-full
-                overflow-hidden
-                bg-neutral-200
+                wwd-caption
+                line-clamp-2
+                min-h-[2.75em]
+                max-w-[34em]
+                text-[clamp(0.9rem,1.1vw,1.15rem)]
+                font-light
+                leading-snug
+                text-foreground/60
               "
             >
-              {services.map((s, i) => (
-                <img
-                  key={s.id}
-                  src={s.image}
-                  alt={
-                    i === active
-                      ? s.title
-                      : ""
-                  }
-                  draggable={false}
-                  className={`
-                    absolute
-                    inset-0
-                    h-full
-                    w-full
-                    object-cover
-                    transition-opacity
-                    duration-700
-                    ${
-                      i === active
-                        ? "opacity-100"
-                        : "opacity-0"
-                    }
-                  `}
-                />
-              ))}
-            </div>
-          )}
+              {current.text}
+            </p>
+          </div>
         </div>
 
         {/* Desktop Service List */}
@@ -400,7 +391,10 @@ export default function WhatWeDo() {
           "
         >
           <header>
+            {/* Reveal + red spotlight come from data-h2-effect (src/lib/headingEffects.ts).
+                Keep this heading as plain text: no mask wrappers, no extra GSAP on it. */}
             <h2
+              data-h2-effect
               className="
                 text-[clamp(1.75rem,6vw,5rem)]
                 font-light
@@ -411,11 +405,7 @@ export default function WhatWeDo() {
                 py-12
               "
             >
-              <span className=" overflow-hidden pb-[0.08em]">
-                <span className="wwd-heading-line">
-                  What We Do
-                </span>
-              </span>
+              What We Do
             </h2>
           </header>
 
@@ -515,7 +505,7 @@ export default function WhatWeDo() {
             flex
             shrink-0
             flex-col
-            gap-5
+            gap-4
             md:hidden
           "
         >
@@ -523,7 +513,7 @@ export default function WhatWeDo() {
             <h3
               className="
                 wwd-m-copy
-                mt-3
+                mt-1
                 flex
                 items-start
                 text-[clamp(1.75rem,8.4vw,2.6rem)]
@@ -535,6 +525,21 @@ export default function WhatWeDo() {
             >
               {current.title}
             </h3>
+
+            <p
+              className="
+                wwd-caption
+                mt-3
+                line-clamp-2
+                min-h-[2.75em]
+                text-sm
+                font-light
+                leading-snug
+                text-foreground/60
+              "
+            >
+              {current.text}
+            </p>
           </div>
 
           <div
