@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type RefObject } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -364,7 +364,7 @@ function WrappedRibbon({ items }: { items: { id: string | number; title: string 
                 <span className="flex px-[2.4vw] font-season text-[clamp(1.9rem,5.4vw,5.2rem)] font-bold uppercase leading-tight tracking-[-0.02em] [-webkit-text-stroke:1px_rgba(255,255,255,0.55)]">
                   {Array.from(s.title).map((ch, k) => (
                     <span key={k} data-ch="txt" className="inline-block" style={{ color: "transparent" }}>
-                      {ch === " " ? " " : ch}
+                      {ch === " " ? "\u00A0" : ch}
                     </span>
                   ))}
                 </span>
@@ -381,6 +381,174 @@ function WrappedRibbon({ items }: { items: { id: string | number; title: string 
       </div>
     </div>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Particle halo: glowing dust that gathers round the cursor,         */
+/*  sitting behind the wordmark as a soft background highlight.        */
+/* ------------------------------------------------------------------ */
+
+const HALO_RATE = 90; // particles born per second while hovering
+const HALO_MAX = 260; // hard cap on live particles
+const HALO_SPREAD = 0.075; // how far from the cursor they appear, as a fraction of the wordmark width
+const HALO_GLOW = 0.1; // strength of the faint soft glow under the dust (0 = none)
+
+type Dust = { x: number; y: number; vx: number; vy: number; age: number; life: number; size: number };
+
+function ParticleHalo({ hostRef }: { hostRef: RefObject<HTMLDivElement | null> }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    const canvas = canvasRef.current;
+    if (!host || !canvas) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // turn whatever CSS colour `text-accent` is (hex, oklch, ...) into plain r,g,b
+    let rgb: [number, number, number] = [255, 46, 77];
+    {
+      ctx.clearRect(0, 0, 1, 1);
+      ctx.fillStyle = "#000";
+      ctx.fillStyle = getComputedStyle(canvas).color;
+      ctx.fillRect(0, 0, 1, 1);
+      const px = ctx.getImageData(0, 0, 1, 1).data;
+      if (px[3] > 0) rgb = [px[0], px[1], px[2]];
+    }
+    const col = (a: number) => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a.toFixed(3)})`;
+
+    let w = 0;
+    let h = 0;
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = host.clientWidth;
+      h = host.clientHeight;
+      canvas.width = Math.max(1, Math.round(w * dpr));
+      canvas.height = Math.max(1, Math.round(h * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(host);
+
+    const dust: Dust[] = [];
+    const target = { x: 0, y: 0, on: 0 };
+    const cur = { x: 0, y: 0, on: 0 };
+    let spawnAcc = 0;
+    let last = 0;
+    let raf = 0;
+
+    const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; // roughly -1..1, bunched in the middle
+
+    const spawn = () => {
+      if (dust.length >= HALO_MAX) return;
+      const spread = Math.min(130, Math.max(60, w * HALO_SPREAD));
+      dust.push({
+        x: cur.x + gauss() * spread * 1.4, // wider than tall: the wordmark is a wide, short band
+        y: cur.y + gauss() * spread * 0.7,
+        vx: (Math.random() - 0.5) * 16,
+        vy: -4 - Math.random() * 14, // drifts gently upward, like embers
+        age: 0,
+        life: 0.9 + Math.random() * 1.4,
+        size: 0.7 + Math.random() * 2,
+      });
+    };
+
+    const frame = (now: number) => {
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+
+      cur.on += (target.on - cur.on) * (1 - Math.exp(-dt * 8));
+      cur.x += (target.x - cur.x) * (1 - Math.exp(-dt * 14));
+      cur.y += (target.y - cur.y) * (1 - Math.exp(-dt * 14));
+
+      if (target.on > 0) {
+        spawnAcc += dt * HALO_RATE;
+        while (spawnAcc >= 1) {
+          spawn();
+          spawnAcc -= 1;
+        }
+      }
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "lighter";
+
+      // faint soft glow under the dust
+      if (cur.on > 0.01 && HALO_GLOW > 0) {
+        const gr = Math.max(w * 0.14, 120);
+        const g = ctx.createRadialGradient(cur.x, cur.y, 0, cur.x, cur.y, gr);
+        g.addColorStop(0, col(HALO_GLOW * cur.on));
+        g.addColorStop(1, col(0));
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      for (let i = dust.length - 1; i >= 0; i--) {
+        const p = dust[i];
+        p.age += dt;
+        if (p.age >= p.life) {
+          dust[i] = dust[dust.length - 1];
+          dust.pop();
+          continue;
+        }
+        p.vx *= 1 - dt * 0.6;
+        p.x += p.vx * dt + Math.sin((p.age + p.y * 0.05) * 3) * 6 * dt; // tiny sideways wobble
+        p.y += p.vy * dt;
+        const t = p.age / p.life;
+        const a = Math.pow(Math.sin(Math.PI * t), 1.2); // fade in, fade out
+        const r = p.size * (1 - 0.4 * t);
+        ctx.fillStyle = col(a * 0.16);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2); // soft halo round each speck
+        ctx.fill();
+        ctx.fillStyle = col(a * 0.95);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2); // bright core
+        ctx.fill();
+      }
+
+      const alive = cur.on > 0.01 || target.on > 0 || dust.length > 0;
+      if (alive) {
+        raf = requestAnimationFrame(frame);
+      } else {
+        raf = 0;
+        ctx.clearRect(0, 0, w, h);
+      }
+    };
+    const kick = () => {
+      if (raf) return;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
+      const r = host.getBoundingClientRect();
+      target.x = e.clientX - r.left;
+      target.y = e.clientY - r.top;
+      if (cur.on < 0.02) {
+        cur.x = target.x;
+        cur.y = target.y;
+      }
+      target.on = 1;
+      kick();
+    };
+    const onLeave = () => {
+      target.on = 0;
+    };
+
+    host.addEventListener("pointermove", onMove);
+    host.addEventListener("pointerleave", onLeave);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      host.removeEventListener("pointermove", onMove);
+      host.removeEventListener("pointerleave", onLeave);
+    };
+  }, [hostRef]);
+
+  return <canvas ref={canvasRef} aria-hidden className="pointer-events-none absolute inset-0 h-full w-full text-accent" />;
 }
 
 /* ------------------------------------------------------------------ */
@@ -590,6 +758,7 @@ export default function Footer() {
             className="ft-mark relative"
             style={{ ["--mx" as string]: "-999px", ["--my" as string]: "-999px", ["--on" as string]: "0" }}
           >
+            <ParticleHalo hostRef={markRef} />
             <Wordmark />
             <div
               aria-hidden

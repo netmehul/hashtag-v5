@@ -15,7 +15,8 @@ gsap.registerPlugin(ScrollTrigger, SplitText);
  * Two behaviours:
  *   1. Scroll into view  -> the text appears (once).
  *   2. Hover (mouse)     -> a spotlight follows the cursor; ONLY the text inside
- *                           the spotlight turns red.
+ *                           the spotlight turns red. Works from the first frame
+ *                           of the reveal (no waiting for the animation to end).
  *
  * Optional attributes
  *   data-spot-color="#ff2e4d"   spotlight colour (default: your --color-accent, else red)
@@ -40,7 +41,16 @@ const FALLBACK_RED = "var(--color-accent, #ff2e4d)";
 /*  Hover spotlight: a red copy of the text, masked by a soft circle    */
 /* ------------------------------------------------------------------ */
 
-function attachSpot(el: HTMLElement, kind: Kind): () => void {
+/**
+ * `html` is the clean, un-split markup of the heading. It is passed in
+ * explicitly because by the time the spotlight is attached the live text
+ * may already be wrapped in SplitText's masks/lines/chars.
+ */
+function attachSpot(
+  el: HTMLElement,
+  kind: Kind,
+  html: string = el.innerHTML
+): () => void {
   const cs = getComputedStyle(el);
   const color = el.dataset.spotColor || FALLBACK_RED;
   const fontSize = parseFloat(cs.fontSize) || 32;
@@ -74,7 +84,8 @@ function attachSpot(el: HTMLElement, kind: Kind): () => void {
   // exact copy of the text, drawn in red on top; the mask decides where it shows
   const layer = document.createElement("span");
   layer.setAttribute("aria-hidden", "true");
-  layer.innerHTML = el.innerHTML;
+  layer.setAttribute("data-fx-spot", "");
+  layer.innerHTML = html;
   layer.style.cssText = [
     "position:absolute",
     `inset:${-bleed}px`,
@@ -175,7 +186,7 @@ function attachSpot(el: HTMLElement, kind: Kind): () => void {
 }
 
 /* ------------------------------------------------------------------ */
-/*  One element: reveal on scroll, then spotlight                       */
+/*  One element: reveal on scroll, spotlight active from the start      */
 /* ------------------------------------------------------------------ */
 
 function setup(el: HTMLElement, kind: Kind): () => void {
@@ -184,6 +195,15 @@ function setup(el: HTMLElement, kind: Kind): () => void {
   let st: ScrollTrigger | undefined;
   let tween: gsap.core.Tween | undefined;
   let detachSpot: (() => void) | undefined;
+  let wrap: HTMLElement | undefined;
+
+  // put the original children back and drop the wrapper
+  const unwrap = () => {
+    if (!wrap) return;
+    while (wrap.firstChild) el.insertBefore(wrap.firstChild, wrap);
+    wrap.remove();
+    wrap = undefined;
+  };
 
   const run = async () => {
     // line breaks depend on the font, so wait for it before splitting
@@ -196,8 +216,20 @@ function setup(el: HTMLElement, kind: Kind): () => void {
       return;
     }
 
+    // clean markup, captured BEFORE any splitting, used for the red layer
+    const cleanHTML = el.innerHTML;
+
+    // Move the text into its own block wrapper. SplitText only touches the
+    // wrapper, so the red spotlight layer (a sibling) is never split or reverted.
+    const w = document.createElement("span");
+    w.setAttribute("data-fx-text", "");
+    w.style.display = "block";
+    while (el.firstChild) w.appendChild(el.firstChild);
+    el.appendChild(w);
+    wrap = w;
+
     split = SplitText.create(
-      el,
+      w,
       kind === "h1"
         ? { type: "lines,chars", mask: "lines" }
         : { type: "lines,words", mask: "lines" }
@@ -219,6 +251,9 @@ function setup(el: HTMLElement, kind: Kind): () => void {
       start: "top 88%",
       once: true,
       onEnter: () => {
+        // hover works from the first frame of the reveal
+        if (!detachSpot) detachSpot = attachSpot(el, kind, cleanHTML);
+
         tween = gsap.to(parts, {
           yPercent: 0,
           rotate: 0,
@@ -232,10 +267,9 @@ function setup(el: HTMLElement, kind: Kind): () => void {
             ),
           },
           onComplete: () => {
-            // back to plain text, so the red spotlight copy matches exactly
+            // back to plain text; the red layer lives outside the wrapper, so it stays
             split?.revert();
             split = undefined;
-            if (!disposed) detachSpot = attachSpot(el, kind);
           },
         });
       },
@@ -249,7 +283,10 @@ function setup(el: HTMLElement, kind: Kind): () => void {
     st?.kill();
     tween?.kill();
     split?.revert();
+    split = undefined;
     detachSpot?.();
+    detachSpot = undefined;
+    unwrap();
     el.removeAttribute("data-fx-ready");
   };
 }
