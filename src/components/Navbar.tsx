@@ -101,40 +101,13 @@ const linkClasses = ({ isActive }: { isActive: boolean }) =>
               className="w-10 sm:w-10 md:w-15"
             />
           </Link>
-
-          {/* Mobile menu button */}
-          <button
-            type="button"
-            aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-navigation"
-            onClick={() => setIsMenuOpen((open) => !open)}
-            className="relative z-50 flex size-11 items-center justify-center rounded-full border border-black/10 transition-all hover:bg-neutral-100 md:hidden"
-          >
-            <span className="sr-only">
-              {isMenuOpen ? "Close menu" : "Open menu"}
-            </span>
-
-            <span className="flex w-5 flex-col items-center gap-1.25">
-              <span
-                className={`h-0.5 w-5 bg-neutral-950 transition-transform duration-300 ${
-                  isMenuOpen ? "translate-y-[3.5px] rotate-45" : ""
-                }`}
-              />
-              <span
-                className={`h-0.5 w-5 bg-neutral-950 transition-transform duration-300 ${
-                  isMenuOpen ? "translate-y-[-3.5px] -rotate-45" : ""
-                }`}
-              />
-            </span>
-          </button>
         </nav>
 
-        {/* Mobile navigation panel */}
+        {/* Mobile navigation panel (always dark, so it reads on any page) */}
         <div
           id="mobile-navigation"
           aria-hidden={!isMenuOpen}
-          className={`absolute inset-x-0 top-full overflow-hidden border-b border-black/10 bg-white/95 backdrop-blur-md transition-[opacity,transform,visibility] duration-300 ease-out md:hidden ${
+          className={`absolute inset-x-0 top-full overflow-hidden rounded-xl border border-white/10 bg-black/90 text-white backdrop-blur-md transition-[opacity,transform,visibility] duration-300 ease-out md:hidden ${
             isMenuOpen
               ? "visible translate-y-0 opacity-100"
               : "invisible -translate-y-2 opacity-0"
@@ -150,8 +123,8 @@ const linkClasses = ({ isActive }: { isActive: boolean }) =>
                 className={({ isActive }) =>
                   `rounded-lg px-4 py-3 text-lg transition-colors duration-200 ${
                     isActive
-                      ? "bg-neutral-100 text-neutral-950"
-                      : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
+                      ? "bg-white/10 text-white"
+                      : "text-white/60 hover:bg-white/10 hover:text-white"
                   }`
                 }
                 style={{
@@ -161,9 +134,55 @@ const linkClasses = ({ isActive }: { isActive: boolean }) =>
                 {link.label}
               </NavLink>
             ))}
+
+            {/* Same CTA as desktop */}
+            <div
+              className="px-4 pt-4"
+              style={{
+                transitionDelay: isMenuOpen ? `${navLinks.length * 50}ms` : "0ms",
+              }}
+            >
+              <CTAButton size="sm" to="/contact">
+                Start a Project
+              </CTAButton>
+            </div>
           </div>
         </div>
       </header>
+
+      {/* Mobile menu button.
+          Same technique as the desktop links: its own fixed layer with
+          mix-blend-difference, so the icon is white on dark pages and flips
+          to dark on light sections instead of disappearing. */}
+      <div
+        className={`pointer-events-none fixed inset-x-2 top-2 z-50 flex h-14 items-center justify-end text-white mix-blend-difference transition-transform duration-500 ease-in-out md:hidden ${hiddenOnScroll}`}
+      >
+        <button
+          type="button"
+          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-navigation"
+          onClick={() => setIsMenuOpen((open) => !open)}
+          className="pointer-events-auto flex size-11 items-center justify-center rounded-full border border-white/40 transition-colors duration-300 hover:bg-white/15"
+        >
+          <span className="sr-only">
+            {isMenuOpen ? "Close menu" : "Open menu"}
+          </span>
+
+          <span className="flex w-5 flex-col items-center gap-1.25">
+            <span
+              className={`h-0.5 w-5 bg-white transition-transform duration-300 ${
+                isMenuOpen ? "translate-y-[3.5px] rotate-45" : ""
+              }`}
+            />
+            <span
+              className={`h-0.5 w-5 bg-white transition-transform duration-300 ${
+                isMenuOpen ? "translate-y-[-3.5px] -rotate-45" : ""
+              }`}
+            />
+          </span>
+        </button>
+      </div>
 
       {/* Desktop */}
       <div

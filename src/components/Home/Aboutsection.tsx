@@ -176,19 +176,19 @@ export default function AboutSection() {
         {/* Label row */}
         <div className="flex items-center justify-between font-mono text-xs uppercase tracking-[0.25em]">
           <p className="about-label flex items-center gap-3">
-            <span aria-hidden className="about-hash font-season text-lg font-bold leading-none text-accent">#</span>
+            <span aria-hidden className="about-hash font-season text-lg font-bold leading-tight text-accent">#</span>
             (About Us)
           </p>
         </div>
 
         {/* Statement */}
-        <div className="flex flex-col py-4 md:flex-row md:items-start md:gap-[4vw]">
+        <div className="flex flex-col gap-5 py-4 md:flex-row md:items-start md:gap-[4vw]">
           <div>
-            <h2 data-h2-effect className="mt-6 md:min-w-[40vw] text-[clamp(1.75rem,7vw,6rem)] font-light uppercase leading-[0.88] tracking-tight">
+            <h2 data-h2-effect className="mt-6 md:min-w-[40vw] text-[clamp(1.75rem,7vw,6rem)] font-light uppercase leading-none tracking-tight">
               We Don't Just Create Events. We Create Impact.
             </h2>
           </div>
-          <p className="about-statement mt-10 text-[clamp(1.25rem,2.7vw,2.3rem)] font-light leading-[1.14] tracking-[-0.02em] md:mt-16 md:max-w-[75%]">
+          <p className="about-statement mt-10 text-[clamp(1.25rem,2.7vw,2.3rem)] font-light leading-tight tracking-[-0.02em] md:mt-16 md:max-w-[75%]">
             {words.map((w, i) => (
               <span key={i} className="inline-block overflow-hidden pb-[0.1em] align-top">
                 <span
@@ -229,7 +229,7 @@ export default function AboutSection() {
 
               {/* bottom: number + label */}
               <div className="relative z-10 mt-auto">
-                <dd className={`about-fade font-light leading-[0.9] tracking-[-0.045em] tabular-nums ${s.size}`}>
+                <dd className={`about-fade font-light leading-tight tracking-[-0.045em] tabular-nums ${s.size}`}>
                   <span className="about-num" data-value={s.value}>{fmt(s.value)}</span>
                   {/* outer span = GSAP entrance, inner span = CSS hover spin (kept apart so they don't fight) */}
                   <span className="about-plus ml-[0.1em] inline-block origin-center tracking-normal text-accent">

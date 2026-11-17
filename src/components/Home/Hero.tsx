@@ -30,7 +30,7 @@ function Hero() {
                 <h1
                     className="
                         font-season font-normal uppercase text-white text-center whitespace-nowrap
-                        text-[18.83cqw] tracking-[-0.03em] leading-none
+                        text-[18.83cqw] tracking-[-0.03em] leading-tight
                         [text-box:trim-both_cap_alphabetic]
                         md:mb-10
                     ">

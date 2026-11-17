@@ -260,7 +260,7 @@ export default function WorkShowcase() {
       <header className=" mb-10 flex flex-col gap-8 px-[5vw] md:mb-2 md:flex-row md:items-end md:justify-center">
         <div>
           {/* <p className="font-mono text-xs uppercase tracking-[0.25em] opacity-60">(Showreel)</p> */}
-          <h2 data-h2-effect className="mt-6 text-[clamp(1.75rem,7vw,6rem)] font-light uppercase leading-[0.88] tracking-tight">
+          <h2 data-h2-effect className="mt-6 text-[clamp(1.75rem,7vw,6rem)] font-light uppercase leading-none tracking-tight">
             <span className="block overflow-hidden pb-[0.08em]">
               <span className="block">Work in motion</span>
             </span>

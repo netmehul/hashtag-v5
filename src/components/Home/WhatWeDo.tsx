@@ -364,7 +364,7 @@ export default function WhatWeDo() {
                 max-w-[34em]
                 text-[clamp(0.9rem,1.1vw,1.15rem)]
                 font-light
-                leading-snug
+                leading-tight
                 text-foreground/60
               "
             >
@@ -399,7 +399,7 @@ export default function WhatWeDo() {
                 text-[clamp(1.75rem,6vw,5rem)]
                 font-light
                 uppercase
-                leading-[0.88]
+                leading-tight
                 tracking-tight
                 mb-4
                 py-12
@@ -468,7 +468,7 @@ export default function WhatWeDo() {
                             text-[clamp(1.4rem,2.9vw,3.1rem)]
                             font-light
                             uppercase
-                            leading-[1.02]
+                            leading-tight
                             tracking-[-0.02em]
                           "
                         >
@@ -519,7 +519,7 @@ export default function WhatWeDo() {
                 text-[clamp(1.75rem,8.4vw,2.6rem)]
                 font-light
                 uppercase
-                leading-none
+                leading-tight
                 tracking-[-0.02em]
               "
             >
@@ -534,7 +534,7 @@ export default function WhatWeDo() {
                 min-h-[2.75em]
                 text-sm
                 font-light
-                leading-snug
+                leading-tight
                 text-foreground/60
               "
             >

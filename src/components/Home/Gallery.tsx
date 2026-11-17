@@ -122,12 +122,12 @@ export default function GallerySection() {
               Keep this heading as plain text: no mask wrappers, no extra GSAP on it. */}
           <h2
             data-h2-effect
-            className="mt-6 text-[clamp(2.25rem,7vw,8rem)] font-light uppercase leading-[0.88] tracking-tight"
+            className="mt-6 text-[clamp(2.25rem,7vw,8rem)] font-light uppercase leading-none tracking-tight"
           >
             Glimpses of <br /> our excellence
           </h2>
         </div>
-        <div className="max-w-xs text-sm leading-relaxed opacity-60 flex flex-col gap-12">
+        <div className="max-w-xs text-sm leading-tight opacity-60 flex flex-col gap-12">
           <p>Moments from the events, campaigns and brand stories we&apos;ve brought to life.</p>
           <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em]">Click any image to expand</p>
         </div>
@@ -185,7 +185,7 @@ export default function GallerySection() {
                       <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70">{it.tag}</p>
                       <p className="mt-1 text-sm uppercase tracking-wide text-white md:text-base">{it.title}</p>
                     </div>
-                    <span className="font-mono text-lg leading-none text-white">+</span>
+                    <span className="font-mono text-lg leading-tight text-white">+</span>
                   </div>
                 </>
               )}
@@ -219,13 +219,13 @@ export default function GallerySection() {
               </div>
 
               <h3
-                className="gallery-ui mt-5 text-[clamp(1.75rem,3.4vw,4rem)] font-light uppercase leading-[0.92] tracking-tight md:mt-8"
+                className="gallery-ui mt-5 text-[clamp(1.75rem,3.4vw,4rem)] font-light uppercase leading-tight tracking-tight md:mt-8"
                 style={{ opacity: 0 }}
               >
                 {activeItem.title}
               </h3>
 
-              <p className="gallery-ui mt-4 py-3 hidden max-w-sm text-sm leading-relaxed opacity-60 md:block" style={{ opacity: 0 }}>
+              <p className="gallery-ui mt-4 py-3 hidden max-w-sm text-sm leading-tight opacity-60 md:block" style={{ opacity: 0 }}>
                 {activeItem.text}
               </p>
             </div>

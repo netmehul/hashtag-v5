@@ -34,8 +34,13 @@ const places = [
 ];
 
 const WORDMARK = "HASHTAG EVENTZ";
-const MARQUEE_SPEED = 1.1; // % of one copy per second
-const outline = "text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.55)]";
+
+/* ribbon tuning ----------------------------------------------------- */
+const RIBBON_SPEED = 0.05; // how fast it flows: fraction of the screen width per second
+const RIBBON_CURVE: "inward" | "outward" = "inward"; // inward = you're inside the ring, outward = wrapped round the outside
+const RIBBON_WRAP_DEG = 82; // outward: how far round the cylinder the screen edges sit (60 = gentle, 85 = very curved)
+const RIBBON_INWARD_DEG = 44; // inward: how strongly the edges swing towards you (30 = gentle, 52 = dramatic)
+const RIBBON_SCROLL_BOOST = 1.2; // extra speed while you scroll (0 = constant speed, always)
 
 const colTitle = "mb-5 font-mono text-[11px] uppercase tracking-[0.25em] text-white/40";
 const linkBase =
@@ -118,7 +123,7 @@ function MagneticCTA() {
     };
   }, []);
 
-  const label = "START A PROJECT \u2022 ";
+  const label = "START A PROJECT • ";
   return (
     <div ref={areaRef} className="ft-fade -m-8 p-8 md:-m-14 md:p-14">
       <Link
@@ -177,12 +182,213 @@ function Wordmark({ className = "", filled = false }: { className?: string; fill
 }
 
 /* ------------------------------------------------------------------ */
+/*  Wrapped ribbon                                                     */
+/*                                                                     */
+/*  The words sit on the outside of an invisible cylinder. Every       */
+/*  letter is placed by its angle round that cylinder:                 */
+/*    • screen position  = R · sin(angle)  → letters bunch up and      */
+/*                         squeeze towards the edges                   */
+/*    • width            = cos(angle)      → they turn away from you   */
+/*    • opacity / fill   = cos(angle)      → outline-only and fading   */
+/*                         as they round the corner; solid in front    */
+/*  The flow itself is a constant, linear drift (an optional gentle    */
+/*  speed-up while scrolling). Only transform / opacity / colour are   */
+/*  written each frame, and only while the ribbon is on screen.        */
+/* ------------------------------------------------------------------ */
+
+const smoothstep = (a: number, b: number, v: number) => {
+  const t = Math.min(1, Math.max(0, (v - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+
+function WrappedRibbon({ items }: { items: { id: string | number; title: string }[] }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    const track = trackRef.current;
+    if (!root || !track) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const chars = Array.from(track.querySelectorAll<HTMLElement>("[data-ch]"));
+    const isSep = chars.map((c) => c.dataset.ch === "sep");
+    const cx = new Float32Array(chars.length); // natural (flat) centre of each letter
+    const hidden = new Uint8Array(chars.length);
+
+    const inward = RIBBON_CURVE === "inward";
+    const wrapRad = (RIBBON_WRAP_DEG * Math.PI) / 180;
+    const inRad = (RIBBON_INWARD_DEG * Math.PI) / 180;
+    let vw = 0; // ribbon width
+    let period = 0; // width of both copies together
+    let R = 1; // cylinder radius
+    let x = 0; // distance travelled (px)
+    let speed = 1;
+    let targetSpeed = 1;
+    let visible = false;
+
+    const measure = () => {
+      vw = root.clientWidth;
+      if (!vw) return;
+      chars.forEach((el, i) => {
+        cx[i] = el.offsetLeft + el.offsetWidth / 2;
+      });
+      period = track.scrollWidth; // two identical copies
+      // outward: screen edge sits at R·sin(wrap).  inward: screen edge sits at R·tan(inward).
+      R = inward ? vw / 2 / Math.tan(inRad) : vw / 2 / Math.sin(wrapRad);
+    };
+
+    const draw = () => {
+      if (!vw || !period) return;
+      const half = vw / 2;
+      const halfPeriod = period / 2;
+      for (let i = 0; i < chars.length; i++) {
+        // distance from the ribbon's centre along the flat strip, wrapped so the loop is seamless
+        let s = cx[i] - x - half;
+        s = ((((s + halfPeriod) % period) + period) % period) - halfPeriod;
+
+        const phi = s / R; // angle round the cylinder
+        const el = chars[i];
+
+        if (inward) {
+          // Seen from inside the ring: the far wall bows towards you at the sides, so
+          // letters spread apart and grow bigger (closer) at the edges, smallest in the middle.
+          if (Math.abs(phi) > inRad * 1.3) {
+            if (!hidden[i]) {
+              el.style.opacity = "0";
+              hidden[i] = 1;
+            }
+            continue;
+          }
+          hidden[i] = 0;
+          const sec = 1 / Math.cos(phi);
+          const tx = half + R * Math.tan(phi) - cx[i];
+          el.style.transform = `translate3d(${tx.toFixed(2)}px,0,0) scale(${(sec * sec).toFixed(4)},${(1 + 0.75 * (sec - 1)).toFixed(4)})`;
+          el.style.opacity = "1";
+          if (!isSep[i]) {
+            // solid in the middle, outline-only as it swings towards you
+            el.style.color = `rgba(255,255,255,${(1 - smoothstep(0.3, 0.95, Math.abs(phi) / inRad)).toFixed(3)})`;
+          }
+          continue;
+        }
+
+        if (phi <= -Math.PI / 2 || phi >= Math.PI / 2) {
+          if (!hidden[i]) {
+            el.style.opacity = "0";
+            hidden[i] = 1;
+          }
+          continue;
+        }
+        hidden[i] = 0;
+
+        const c = Math.cos(phi);
+        const tx = half + R * Math.sin(phi) - cx[i];
+        el.style.transform = `translate3d(${tx.toFixed(2)}px,0,0) scale(${c.toFixed(4)},${(0.55 + 0.45 * c).toFixed(4)})`;
+        el.style.opacity = Math.pow(c, 0.7).toFixed(3);
+        if (!isSep[i]) {
+          // solid in front, outline-only as it rounds the corner
+          el.style.color = `rgba(255,255,255,${smoothstep(0.84, 0.985, c).toFixed(3)})`;
+        }
+      }
+    };
+
+    const reveal = () => {
+      measure();
+      draw();
+      root.style.opacity = "1";
+    };
+    reveal();
+    document.fonts?.ready.then(reveal); // re-measure once the display font is in
+
+    const ro = new ResizeObserver(() => {
+      measure();
+      draw();
+    });
+    ro.observe(root);
+
+    if (reduced) {
+      return () => ro.disconnect(); // static, curved ribbon
+    }
+
+    // optional gentle speed-up while scrolling (no reversing, so it stays smooth)
+    let lastY = window.scrollY;
+    let lastT = performance.now();
+    const onScroll = () => {
+      const now = performance.now();
+      const v = Math.abs(window.scrollY - lastY) / Math.max(now - lastT, 1) * 1000; // px/s
+      lastY = window.scrollY;
+      lastT = now;
+      targetSpeed = 1 + Math.min(v / 1400, 1) * RIBBON_SCROLL_BOOST;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { rootMargin: "100px" });
+    io.observe(root);
+
+    const tick = (_t: number, deltaMs: number) => {
+      if (!visible || !period) return;
+      const dt = Math.min(deltaMs, 50) / 1000;
+      targetSpeed += (1 - targetSpeed) * (1 - Math.exp(-dt * 1.4)); // boost eases back
+      speed += (targetSpeed - speed) * (1 - Math.exp(-dt * 4));
+      x = (x + speed * vw * RIBBON_SPEED * dt) % period;
+      draw();
+    };
+    gsap.ticker.add(tick);
+
+    return () => {
+      gsap.ticker.remove(tick);
+      window.removeEventListener("scroll", onScroll);
+      io.disconnect();
+      ro.disconnect();
+    };
+  }, []);
+
+  return (
+    <div
+      ref={rootRef}
+      aria-hidden
+      className={`relative overflow-hidden border-y border-white/10 opacity-0 transition-opacity duration-700 ${
+        RIBBON_CURVE === "inward" ? "py-7 md:py-12" : "py-5 md:py-8" // inward letters grow at the edges, so give them room
+      }`}
+      style={{
+        // the far edges dissolve, so the ribbon seems to leak round the sides
+        maskImage: "linear-gradient(90deg, transparent 0%, #000 9%, #000 91%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(90deg, transparent 0%, #000 9%, #000 91%, transparent 100%)",
+      }}
+    >
+      <div ref={trackRef} className="relative flex w-max whitespace-nowrap">
+        {[0, 1].map((copy) => (
+          <div key={copy} className="flex shrink-0 items-center">
+            {items.map((s) => (
+              <span key={s.id} className="flex items-center">
+                <span className="flex px-[2.4vw] font-season text-[clamp(1.9rem,5.4vw,5.2rem)] font-bold uppercase leading-tight tracking-[-0.02em] [-webkit-text-stroke:1px_rgba(255,255,255,0.55)]">
+                  {Array.from(s.title).map((ch, k) => (
+                    <span key={k} data-ch="txt" className="inline-block" style={{ color: "transparent" }}>
+                      {ch === " " ? " " : ch}
+                    </span>
+                  ))}
+                </span>
+                <span
+                  data-ch="sep"
+                  className="inline-block font-season text-[clamp(1.2rem,3vw,3rem)] font-bold leading-tight text-accent [-webkit-text-stroke:0]"
+                >
+                  #
+                </span>
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Footer                                                             */
 /* ------------------------------------------------------------------ */
 
 export default function Footer() {
   const rootRef = useRef<HTMLElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
   const markRef = useRef<HTMLDivElement>(null);
 
   /* reveals + gentle parallax as the footer arrives */
@@ -231,46 +437,6 @@ export default function Footer() {
       });
     }, rootRef);
     return () => ctx.revert();
-  }, []);
-
-  /* marquee: drifts on its own, speeds up (and reverses) with your scrolling */
-  useEffect(() => {
-    const track = trackRef.current;
-    const root = rootRef.current;
-    if (!track || !root) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
-
-    let visible = false;
-    let x = 0; // % travelled, wraps every 50 (one copy of the content)
-    let speed = 1;
-    let targetSpeed = 1;
-
-    const st = ScrollTrigger.create({
-      trigger: root,
-      start: "top bottom",
-      end: "bottom top",
-      onToggle: (self) => { visible = self.isActive; },
-      onUpdate: (self) => {
-        const boost = Math.min(Math.abs(self.getVelocity()) / 350, 7);
-        targetSpeed = self.direction * (1 + boost);
-      },
-    });
-
-    const tick = (_t: number, deltaMs: number) => {
-      if (!visible) return;
-      const dt = Math.min(deltaMs, 50) / 1000;
-      const base = targetSpeed < 0 ? -1 : 1;
-      targetSpeed += (base - targetSpeed) * 0.04; // boost fades back to a gentle drift
-      speed += (targetSpeed - speed) * 0.1;
-      x = (((x + speed * MARQUEE_SPEED * dt) % 50) + 50) % 50;
-      track.style.transform = `translate3d(${-x}%,0,0)`;
-    };
-    gsap.ticker.add(tick);
-    return () => {
-      st.kill();
-      gsap.ticker.remove(tick);
-    };
   }, []);
 
   /* cursor spotlight on the wordmark (mouse only) */
@@ -326,42 +492,20 @@ export default function Footer() {
     <footer ref={rootRef} className="relative isolate w-full overflow-hidden bg-black text-white">
       <FooterGlow />
 
-      {/* Services marquee: a ribbon across the top */}
-      <div className="relative overflow-hidden border-y border-white/10 py-5 md:py-8" aria-hidden>
-        <div ref={trackRef} className="flex w-max whitespace-nowrap will-change-transform">
-          {[0, 1].map((copy) => (
-            <div key={copy} className="flex shrink-0 items-center">
-              {services.map((s, i) => (
-                <span key={s.id} className="flex items-center">
-                  <span
-                    className={`px-[2.4vw] font-season text-[clamp(1.9rem,5.4vw,5.2rem)] font-bold uppercase leading-none tracking-[-0.02em] ${
-                      i % 2 ? outline : ""
-                    }`}
-                  >
-                    {s.title}
-                  </span>
-                  <span className="font-season text-[clamp(1.2rem,3vw,3rem)] font-bold leading-none text-accent">#</span>
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Services ribbon: wrapped round a cylinder across the top */}
+      <WrappedRibbon items={services} />
 
       <div className="ft-inner mx-auto max-w-[1920px] px-[5vw] pt-20 md:pt-36">
         {/* Call to action */}
         <div className="ft-cta flex flex-col gap-12 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="ft-fade mb-6 font-mono text-xs uppercase tracking-[0.25em] text-white/50">(Let&rsquo;s talk)</p>
-            <h2 className="text-[clamp(2.4rem,8.4vw,9rem)] font-light uppercase leading-[0.9] tracking-[-0.035em]">
+            <h2 className="text-[clamp(2.4rem,8.4vw,9rem)] font-light uppercase leading-none tracking-[-0.035em]">
               <span className="block overflow-hidden pb-[0.1em]">
                 <span className="ft-line block">Got a bold idea?</span>
               </span>
               <span className="block overflow-hidden pb-[0.1em]">
-                <span className="ft-line block">Let&rsquo;s make it</span>
-              </span>
-              <span className="block overflow-hidden pb-[0.1em]">
-                <span className="ft-line block font-season font-bold text-accent">unforgettable</span>
+                <span className="text-4xl md:text-[76px] tracking-wide leading-none block">Let&rsquo;s make it <span className=" font-season font-bold text-accent" >unforgettable</span></span>
               </span>
             </h2>
           </div>
@@ -371,7 +515,7 @@ export default function Footer() {
         {/* Columns */}
         <div className="ft-cols mt-12 grid grid-cols-2 gap-x-6 gap-y-14 border-t border-white/10 pt-12 md:mt-20 md:grid-cols-12 md:gap-x-[1.5vw] md:pt-14">
           <div className="col-span-2 md:col-span-4 md:pr-[3vw]">
-            <p className="max-w-sm text-lg leading-snug text-white/80 md:text-xl">
+            <p className="max-w-sm text-lg leading-tight text-white/80 md:text-xl">
               Experience-makers who turn bold ideas into unforgettable experiences.
             </p>
             {hasContact && (

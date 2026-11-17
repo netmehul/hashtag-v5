@@ -284,7 +284,7 @@ export default function Testimonials() {
       aria-label="Testimonials"
       className="relative isolate w-full overflow-hidden bg-background px-[5vw] py-[8svh] text-foreground md:py-[12svh]"
     >
-      <h2 data-h2-effect className="mb-[4svh] text-[clamp(1.75rem,6vw,5rem)] text-center font-light uppercase leading-[0.88] tracking-tight md:mb-[7svh]">
+      <h2 data-h2-effect className="mb-[4svh] text-[clamp(1.75rem,6vw,5rem)] text-center font-light uppercase leading-tight tracking-tight md:mb-[7svh]">
         <span className="block overflow-hidden pb-[0.08em]">
           <span className="block">What They Say</span>
         </span>
@@ -334,7 +334,7 @@ export default function Testimonials() {
               )}
 
               <blockquote
-                className={`px-5 pb-1 text-[clamp(0.95rem,1.05vw,1.1rem)] font-light leading-relaxed tracking-[-0.005em] ${
+                className={`px-5 pb-1 text-[clamp(0.95rem,1.05vw,1.1rem)] font-light leading-tight tracking-[-0.005em] ${
                   hasMedia ? "pt-4" : "pt-7"
                 }`}
               >

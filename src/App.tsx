@@ -10,6 +10,7 @@ import Clients from "./pages/Clients";
 import ContactUs from "./pages/Contact";
 import Footer from "./components/Footer";
 import { useHeadingEffects } from "./lib/headingEffects";
+import ProjectDetail from "./pages/ProjectDetail";
 
 function App() {
   useHeadingEffects();
@@ -19,10 +20,11 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/about" element={<AboutUs />} />
         <Route path="/projects" element={<Projects />} />
+        <Route path="/projects/:slug" element={<ProjectDetail />} />
         <Route path="/clients" element={<Clients />} />
-        <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/contact" element={<ContactUs />} />
       </Routes>
       <Footer />
     </BrowserRouter>
