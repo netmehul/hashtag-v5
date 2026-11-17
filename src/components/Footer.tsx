@@ -20,10 +20,10 @@ const socials: { label: string; href: string }[] = [
 
 const navLinks = [
   { label: "Home", to: "/" },
-  { label: "About", to: "/about-us" },
+  { label: "About", to: "/about" },
   { label: "Projects", to: "/projects" },
   { label: "Clients", to: "/clients" },
-  { label: "Contact", to: "/contact-us" },
+  { label: "Contact", to: "/contact" },
 ];
 
 // where you work, with the IANA time zone used for the live clocks

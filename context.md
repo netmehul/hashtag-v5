@@ -4,7 +4,7 @@
 
 This repository contains the client-side website for **HASHTAG Eventz**, an events and brand-experience company. The app is built with React and TypeScript using Vite. Its current Home experience is a long-form visual landing page: dark video-reveal hero, light image gallery, light video showreel, animated About section, pinned “What We Do” showcase, and a testimonials board. A shared animated footer follows route content on every page.
 
-The Home page is substantially more developed than the other routes. About, Projects, Clients, and Contact routes exist, but three are placeholders and About content is also present as a richer Home section. This is still a static front-end: no API, CMS, contact submission, authentication, or persistent app data is wired up.
+The Home page is the longest visual experience, and the other routes now have dedicated page experiences: a company story, filterable project portfolio and project details, partner logos, and a multi-step Contact brief. Project and partner content and contact details still contain sample placeholders. This is a client-side app without a CMS or persistent app data; Contact can POST to an optional endpoint or fall back to a prefilled email.
 
 ## Stack and commands
 
@@ -27,7 +27,7 @@ npm run preview   # Serve dist/
 
 ### Latest verification
 
-The last recorded `npm run build` succeeded before the current Footer/FooterGlow additions. That build emitted a 1,080.77 kB minified JavaScript chunk (311.27 kB gzip), above its 500 kB advisory threshold; rebuild to verify the current bundle.
+The most recent `npm run build` attempt failed at `src/pages/About.tsx:103` with TS6133 because `GRAIN` is declared but never read. The last previously successful build emitted a 1,080.77 kB minified JavaScript chunk (311.27 kB gzip), above its 500 kB advisory threshold; resolve the type error, then rebuild to verify the current bundle.
 
 The last recorded `npm run lint` failed with three React Hooks diagnostics:
 
@@ -43,16 +43,13 @@ No test script or test files are currently present. Re-run checks after changes;
 | Route | Component | Current contents |
 |---|---|---|
 | `/` | `src/pages/Home.tsx` | Hero, Gallery, WorkShowcase, About section, What We Do, Testimonials |
-| `/about-us` | `src/pages/About.tsx` | Minimal About page |
-| `/projects` | `src/pages/Projects.tsx` | Placeholder heading |
-| `/clients` | `src/pages/Clients.tsx` | Placeholder heading |
-| `/contact-us` | `src/pages/Contact.tsx` | “Start Project” heading |
+| `/about` | `src/pages/About.tsx` | Company story, services, process, and values |
+| `/projects` | `src/pages/Projects.tsx` | Filterable portfolio with sample project content |
+| `/projects/:slug` | `src/pages/ProjectDetail.tsx` | Project story, facts, media gallery, and next-project link |
+| `/clients` | `src/pages/Clients.tsx` | Responsive partner-logo grid with placeholder names |
+| `/contact` | `src/pages/Contact.tsx` | Four-step project inquiry brief |
 
-There is no not-found route; unmatched locations show the shared navbar and footer without page content.
-
-**Known route mismatch:** Navbar links currently use `/about` and `/contact`; the router only registers `/about-us` and `/contact-us`. Projects and Clients paths match. Align paths or intentionally add aliases.
-
-The global footer uses the registered `/about-us` and `/contact-us` destinations, so its About and Contact links do not share the Navbar's current mismatch.
+There is no not-found route; unmatched locations show the shared navbar and footer without page content. Navbar links use the registered `/about` and `/contact` routes.
 
 ## Current Home page flow
 
@@ -106,6 +103,27 @@ The current metrics are `13+ Years of experience`, `4000+ Successful events`, `4
 
 `src/data/testimonials.ts` defines the `Testimonial` shape and five current entries. Each entry has a quote, name, role, and company. Optional image and video fields are supported; videos play muted on hover and can be toggled by tap on touch screens. The current entries have no enabled media, and the file explicitly identifies all testimonial copy and identity details as placeholder content that must be replaced with approved real material before publication.
 
+## Projects and project details
+
+`src/pages/Projects.tsx` filters and displays project cards from `src/data/projects.ts`. Cards link to `/projects/:slug`, show optional muted video previews on hover (or when mostly in view on touch screens), and animate into view unless reduced motion is requested.
+
+`src/pages/ProjectDetail.tsx` resolves the route slug against the same project dataset. Each detail page includes a hero image or video, category/year, client/location/services, summary, optional image gallery, and a link to the next project. The current nine project records are explicitly sample content: client names and project information must be replaced with approved material before publication.
+
+## Clients page
+
+`src/pages/Clients.tsx` renders the partner records from `src/data/partners.ts` in a responsive grid. SVGs are used as masks for consistent monochrome logos, with entrance animations and a pointer-following spotlight. Some partners may link to external sites. The current names are placeholders and should be replaced with approved names and URLs.
+
+## Contact page and brief submission
+
+`src/pages/Contact.tsx` provides a four-step brief builder:
+
+1. Select one or more services from `src/data/whatWeDo.ts`.
+2. Choose a budget range and timeline from `src/data/contact.ts`.
+3. Enter a project brief (at least 10 non-whitespace characters) and an optional reference URL.
+4. Provide a name and valid email; company and phone are optional.
+
+Step progress, Back/Continue controls, validation, animated transitions, a hidden honeypot, sending/error states, and a success screen are handled in the page. `src/lib/submitBrief.ts` POSTs the brief as JSON to `VITE_FORM_ENDPOINT` when configured; without it, the browser opens a prefilled `mailto:` message addressed to `CONTACT.email`. Contact email, phone, studio location/hours, budgets, and timelines are currently placeholders in `src/data/contact.ts`. This is a form integration option, not a built-in backend.
+
 ## What We Do service showcase
 
 `src/components/Home/WhatWeDo.tsx` renders after About. Its six service records (title, description, image, two tags, and optional tag colors) are defined in `src/data/whatWeDo.ts`; the images live under `public/images/whatWeDo/`.
@@ -123,7 +141,7 @@ The current metrics are `13+ Years of experience`, `4000+ Successful events`, `4
 
 - It hides when scrolling down beyond the first 80px and reappears when scrolling up; scroll handling is throttled with `requestAnimationFrame`.
 - The mobile menu closes on route changes, scroll down, and Escape; the burger exposes `aria-expanded` and `aria-controls`, and closed mobile links have `tabIndex=-1`.
-- The About link points to `/about` and the “Start a Project” CTA points to `/contact`, both currently mismatched with registered routes.
+- The About link points to `/about` and the “Start a Project” CTA points to `/contact`; both match registered routes.
 - The route-change effect synchronously sets state and is the current navbar lint error.
 
 `src/components/CTAButton.tsx` renders an internal React Router link, external anchor, or native button. It supports `primary`/`secondary`/`ghost`, `sm`/`md`/`lg`, `fit`/`full`, and optional arrow icon. CTA styles and reduced-transition support are in `src/index.css`.
@@ -133,7 +151,7 @@ The current metrics are `13+ Years of experience`, `4000+ Successful events`, `4
 `src/components/Footer.tsx` is rendered after `Routes` in `src/App.tsx`, so it appears on all routes, including pages that are otherwise placeholders. It currently provides:
 
 - A marquee of the six services, whose direction and speed respond to scroll velocity while the footer is visible.
-- A “Got a bold idea?” CTA with a rotating SVG text ring, magnetic pointer response, and link to `/contact-us`.
+- A “Got a bold idea?” CTA with a rotating SVG text ring, magnetic pointer response, and link to `/contact-us`. This path is not registered; update it to `/contact`.
 - A responsive information grid with tagline, route links, service names, and live local clocks for Dubai, Abu Dhabi, and Doha.
 - Optional email, phone, and social links. These are currently empty/unconfigured and therefore hidden.
 - A large outlined HASHTAG EVENTZ wordmark with a cursor-following red spotlight, current-year copyright, and back-to-top button.
@@ -150,10 +168,13 @@ The current metrics are `13+ Years of experience`, `4000+ Successful events`, `4
 - Showreel videos: `public/WorkAssets/`.
 - What We Do images: `public/images/whatWeDo/` (six service photos).
 - Footer contact email, phone, and social links are not configured; set these in `src/components/Footer.tsx` when approved details are available.
+- Contact-form values and choice lists are in `src/data/contact.ts`; configure `VITE_FORM_ENDPOINT` for POST delivery or retain the email fallback.
+- Project sample content is in `src/data/projects.ts`; partner placeholder names and logo paths are in `src/data/partners.ts` and `public/partner-logo/`.
 - 3D model: `public/model/abstract_shape.glb`.
 - Brand assets: `public/logoIcon.svg`, `public/logoFull.svg`, `public/favicon.svg`, `public/icons.svg`.
 - Season Sans files: `public/fonts/SeasonSans/`; Geist comes from `@fontsource-variable/geist`.
 - `src/index.css` defines Tailwind theme colors, font tokens, global reset, and CTA styles. Body defaults are black/white; Home changes theme tokens as it scrolls.
+- Page and component line-height utilities use Tailwind's `leading-tight`.
 - `src/App.css` remains Vite starter CSS and its selectors do not appear in the current UI.
 
 ## Source map
@@ -168,6 +189,9 @@ src/
     workData.ts                 Video showreel content
     whatWeDo.ts                 Six service records and image/tag data
     testimonials.ts             Testimonial types and placeholder content
+    projects.ts                 Nine sample portfolio entries
+    partners.ts                 Partner-logo names, paths, and optional URLs
+    contact.ts                  Contact placeholders, budgets, and timelines
   components/
     Navbar.tsx
     CTAButton.tsx
@@ -188,16 +212,19 @@ src/
       HorizontalScroll.tsx      Reusable helper; current call sites not confirmed
   lib/
     SmoothScroll.tsx
+    submitBrief.ts              Optional endpoint POST with mailto fallback
   pages/
     Home.tsx
     About.tsx
     Projects.tsx
+    ProjectDetail.tsx
     Clients.tsx
     Contact.tsx
 public/
   GalleryAssets/
   WorkAssets/
   images/whatWeDo/              Six service showcase images
+  partner-logo/                 Partner SVG logos
   fonts/SeasonSans/
   model/
   videos/
@@ -205,17 +232,18 @@ public/
 
 ## Open ends and next-agent guidance
 
-1. Align Navbar destinations with the route table or add intended route aliases.
-2. Decide whether the nine-image Gallery, eight-item WorkShowcase, or both represent the final portfolio; their content is currently separate and hard-coded.
-3. Fix/verify showreel poster paths under `/images/work/`; those files were not found in the current public asset inventory.
-4. Choose intended Season Sans weight and align font-face declaration and utility weight; verify loading and font license.
-5. Confirm the About metrics and copy are accurate and approved.
-6. Replace testimonial placeholder quotes, names, and companies with approved customer content. Configure optional media only when real approved assets are available.
-7. Build out the non-Home route pages and actual Contact inquiry submission flow. Add a not-found page.
-8. Configure footer email, phone, and social links with approved contact details.
-9. Resolve the three current lint errors (Navbar set-state-in-effect; GalleryGL render-time ref writes).
-10. Reassess bundle size and GPU/mobile performance. The latest recorded build emits a roughly 1.08 MB minified JS chunk; the site has multiple Three.js experiences, including the service canvas and footer glow.
-11. Review keyboard, focus, reduced-motion, and fallback behaviors for navigation, gallery, showreel, service showcase, testimonials, footer, and 3D models.
-12. Add tests; none are currently configured.
+1. Update the Footer project CTA from `/contact-us` to the registered `/contact` route.
+2. Replace the sample project and partner records with approved client names, project details, URLs, and media.
+3. Decide whether the nine-image Gallery, eight-item WorkShowcase, or both represent the final portfolio; their content is currently separate and hard-coded.
+4. Fix/verify showreel poster paths under `/images/work/`; those posters were not present in the current public asset inventory.
+5. Choose the intended Season Sans weight, align the font-face declaration and utility weight, and confirm the font license.
+6. Confirm the About metrics and copy are accurate and approved.
+7. Replace testimonial placeholder quotes, names, and companies with approved customer content. Configure optional media only when available and approved.
+8. Replace Contact placeholders in `src/data/contact.ts`, configure `VITE_FORM_ENDPOINT` if POST delivery is required, and set approved footer contact details.
+9. Add a not-found route.
+10. Resolve the current TypeScript build error (`GRAIN` unused in `src/pages/About.tsx`) and verify the current production bundle size.
+11. Re-run lint and address any remaining findings; the last recorded lint issues were Navbar state update inside an effect and render-time ref writes in `GalleryGL`.
+12. Review keyboard, focus, reduced-motion, and fallback behavior across navigation, galleries, project previews, the brief form, testimonials, footer, and 3D experiences.
+13. Add tests; none are currently configured.
 
 Before changing the Home experience, read `Home.tsx` and the relevant child component/provider together. Gallery tiles, video showreel, the service showcase, testimonials, and the About model are distinct experiences with different content sources and media lifecycle behavior.

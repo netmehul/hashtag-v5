@@ -2,7 +2,7 @@
 
 The front-end for the HASHTAG Eventz agency and brand-experience website. The Home page is a visual, scroll-led experience with an interactive video hero, image gallery, video showreel, animated About section, interactive “What We Do” showcase, and testimonials board.
 
-> **Status:** The Home page is the most developed route. About, Projects, Clients, and Contact routes exist, but several remain placeholders. The app is currently a static client-side experience with no CMS, backend, or inquiry form integration.
+> **Status:** The site includes a complete Home experience plus dedicated About, Projects, project-detail, Clients, and Contact pages. Project and partner content and contact details still include sample placeholders. The Contact form can submit to an optional configured endpoint; without one, it opens a prefilled email.
 
 ## What’s in the experience
 
@@ -14,6 +14,9 @@ The front-end for the HASHTAG Eventz agency and brand-experience website. The Ho
 - **Responsive navigation:** Floating header hides while scrolling down and reappears while scrolling up; includes a mobile dropdown menu.
 - **Pinned service showcase:** Scroll through six services with gentle snapping, clickable/keyboard navigation, animated image transitions, floating labels, and a reflective 3D object. A plain-image fallback is shown if WebGL is unavailable.
 - **Testimonials board:** Five testimonial cards animate into a responsive board; cards can be dragged on desktop. The component supports optional photos or muted video, though the current testimonial content is placeholder text without media.
+- **Project portfolio:** Filterable project cards link to individual project stories with project facts, hero media, image galleries, and next-project navigation. Current project records are sample content.
+- **Partner page:** A responsive logo grid with animated reveals and cursor-following spotlight. Partner names are placeholders.
+- **Project inquiry:** A four-step brief form collects services, budget and timeline, project details, and contact information.
 - **Site-wide footer:** A branded footer with route links, service list, local clocks for Dubai, Abu Dhabi, and Doha, an animated “Start a Project” CTA, and a back-to-top control. Its low-resolution Three.js glow reacts to pointer movement and falls back to a plain black footer if WebGL is unavailable.
 - **Theme transitions:** Home scrolls from a dark hero into light Gallery/Showreel sections and back to dark About, service, and testimonial sections.
 
@@ -27,6 +30,8 @@ The front-end for the HASHTAG Eventz agency and brand-experience website. The Ho
 - GSAP (ScrollTrigger and Flip) + `@gsap/react`
 - Lenis
 - Geist Variable and local Season Sans files
+
+Page and component text uses Tailwind's `leading-tight` utility for line height.
 
 ## Getting started
 
@@ -57,12 +62,13 @@ Routes are declared in `src/App.tsx`; the shared navbar and footer appear across
 | Path | Page | Current state |
 |---|---|---|
 | `/` | Home | Hero, Gallery, WorkShowcase, About section, What We Do, Testimonials |
-| `/about-us` | About | Minimal About content |
-| `/projects` | Projects | Placeholder heading |
-| `/clients` | Clients | Placeholder heading |
-| `/contact-us` | Contact | Placeholder “Start Project” heading |
+| `/about` | About | Company story, services, process, and values |
+| `/projects` | Projects | Filterable portfolio of sample projects |
+| `/projects/:slug` | Project detail | Story, facts, media, and gallery for a project |
+| `/clients` | Clients | Partner-logo grid with placeholder names |
+| `/contact` | Contact | Four-step project brief with endpoint or email submission |
 
-**Known mismatch:** The navbar currently targets `/about` and `/contact`, while the registered routes are `/about-us` and `/contact-us`. Unknown paths have no dedicated not-found page.
+Unknown paths have no dedicated not-found page. The shared Footer CTA still targets `/contact-us`, which is not registered; update it to `/contact`.
 
 ### Global footer
 
@@ -94,6 +100,18 @@ Routes are declared in `src/App.tsx`; the shared navbar and footer appear across
 
 `src/components/Home/Testimonials.tsx` renders the “What They Say” section after What We Do. It displays responsive quote cards that animate in on scroll and can be dragged on desktop. `src/data/testimonials.ts` provides five entries and supports optional image/video media; current names, companies, and quotes are explicitly placeholder content, and no media is enabled yet.
 
+## Portfolio and clients
+
+`src/pages/Projects.tsx` renders category filters and responsive project cards from `src/data/projects.ts`. Cards show an optional muted video preview on hover (or while in view on touch devices) and link to `/projects/:slug`. `src/pages/ProjectDetail.tsx` renders each project's hero, facts, summary, optional gallery, and next-project link. Project names, clients, and media assignments in the data file are sample content; replace them with approved portfolio data.
+
+`src/pages/Clients.tsx` displays the partner logos from `src/data/partners.ts` as a responsive grid. The current partner names are placeholders; replace them with approved names and add optional external URLs as needed.
+
+## Contact page
+
+`src/pages/Contact.tsx` guides visitors through four steps: selected services; budget and timeline; project brief and optional reference link; and contact details. It validates each step, includes a hidden honeypot field, and shows a confirmation state after submission.
+
+`src/lib/submitBrief.ts` POSTs JSON to `VITE_FORM_ENDPOINT` when that environment variable is configured. Otherwise, it opens a prefilled email addressed to `CONTACT.email`. Edit the placeholder contact details, budget ranges, and timelines in `src/data/contact.ts`. The endpoint integration is optional; no API/backend is required for the email fallback.
+
 ## Assets and site metadata
 
 - Gallery imagery: `public/GalleryAssets/01.webp`–`09.webp`
@@ -101,6 +119,7 @@ Routes are declared in `src/App.tsx`; the shared navbar and footer appear across
 - Hero video: `public/videos/hero-burn.mp4`
 - 3D asset: `public/model/abstract_shape.glb`
 - What We Do service images: `public/images/whatWeDo/`
+- Partner logos: `public/partner-logo/`
 - Optional testimonial media: paths can be supplied in `src/data/testimonials.ts`; no testimonial media is currently configured.
 - Footer contact details and social profiles are currently blank in `src/components/Footer.tsx`.
 - Logo icon: `public/logoIcon.svg`
@@ -111,15 +130,15 @@ Routes are declared in `src/App.tsx`; the shared navbar and footer appear across
 
 ## Current follow-ups
 
-- Correct the Navbar About/Contact paths.
 - Confirm which work gallery represents the final project portfolio; the image gallery and video showreel use separate hard-coded datasets.
 - Verify the showreel poster paths: `workData.ts` references `/images/work/*.jpg`, but those posters were not present in the current asset inventory.
 - Confirm About copy and displayed business metrics.
+- Replace sample project records and placeholder partner names with approved client, project, and media details.
 - Replace testimonial placeholder quotes, names, and companies with approved customer testimonials; add media only when available and approved.
-- Configure the footer email, phone, and social links when approved contact details are available.
-- Complete Projects, Clients, About, and Contact routes; define the Contact inquiry flow.
+- Configure the Contact page's placeholder details in `src/data/contact.ts`, set `VITE_FORM_ENDPOINT` if form POST delivery is desired, and configure the footer email, phone, and social links when approved contact details are available.
+- Update the Footer project CTA from `/contact-us` to the registered `/contact` route.
 - Address the current lint errors: Navbar state update inside a route-change effect and `GalleryGL` refs updated during render.
-- Measure bundle and GPU/mobile performance. A recent build emitted a ~1.08 MB minified JavaScript chunk; the site includes several Three.js-powered experiences, including the service showcase and footer glow.
+- Resolve the current TypeScript build error in `src/pages/About.tsx` (`GRAIN` is declared but unused), then re-check bundle size and GPU/mobile performance. The last successful build emitted a ~1.08 MB minified JavaScript chunk; the site includes several Three.js-powered experiences, including the service showcase and footer glow.
 - Add tests and a not-found route.
 
 For detailed architecture, behavior, and handover notes, see [context.md](./context.md).

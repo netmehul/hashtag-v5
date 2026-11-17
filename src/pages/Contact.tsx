@@ -90,7 +90,7 @@ function Field(props: {
         onChange={(e) => props.onChange(e.target.value)}
         autoComplete={props.autoComplete}
         placeholder={props.placeholder}
-        className="mt-2 w-full border-b border-foreground/30 bg-transparent pb-3 text-[clamp(1.2rem,2.2vw,2rem)] font-light outline-none transition-colors duration-300 placeholder:text-foreground/20 focus:border-accent"
+        className="mt-2 w-full border-b border-foreground/30 bg-transparent pb-3 text-[clamp(1.05rem,1.7vw,1.6rem)] font-light outline-none transition-colors duration-300 placeholder:text-foreground/20 focus:border-accent"
       />
     </label>
   );
@@ -119,7 +119,7 @@ function Marquee({ words }: { words: string[] }) {
           <div key={k} className="flex shrink-0 items-center">
             {words.map((w) => (
               <span key={w} className="flex items-center">
-                <span className="px-6 text-[clamp(2rem,6vw,6rem)] font-light uppercase leading-tight tracking-tight text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.4)] md:px-10">
+                <span className="px-6 text-[clamp(1.6rem,4.2vw,4.25rem)] font-light uppercase leading-tight tracking-tight text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.4)] md:px-10">
                   {w}
                 </span>
                 <span className="text-accent">✦</span>
@@ -182,7 +182,7 @@ function Done({ brief, mode }: { brief: Brief; mode: "sent" | "mailto" }) {
         </p>
       </div>
 
-      <h2 className="sp-done mt-8 text-[clamp(2.5rem,8vw,8rem)] font-light uppercase leading-tight tracking-tight">
+      <h2 className="sp-done mt-8 text-[clamp(2.25rem,6vw,6rem)] font-light uppercase leading-tight tracking-tight">
         {mode === "sent" ? (
           <>
             Thank you,
@@ -383,13 +383,13 @@ function ContactUs() {
   const finished = status === "sent" || status === "mailto";
 
   return (
-    <main ref={rootRef} className="bg-background text-foreground" style={DARK}>
+    <main ref={rootRef} className="bg-background overflow-x-clip text-foreground" style={DARK}>
       {/* ---------- title ---------- */}
-      <section className="px-[5vw] pb-[7svh] pt-[22svh]">
+      <section className="px-[5vw] pb-[6svh] pt-[18svh]">
         {/* reveal + red spotlight come from data-h1-effect (src/lib/headingEffects.ts) */}
         <h1
           data-h1-effect
-          className="font-season text-[clamp(3.5rem,15.5vw,19rem)] font-black uppercase leading-tight tracking-[-0.03em]"
+          className="font-season text-[clamp(3rem,11vw,13.5rem)] font-black uppercase leading-none tracking-[-0.03em]"
         >
           Start a <br /> project
         </h1>
@@ -409,7 +409,7 @@ function ContactUs() {
       <Marquee words={services.map((s) => s.title)} />
 
       {/* ---------- brief builder ---------- */}
-      <section className="px-[5vw] py-[9svh] md:py-[12svh]">
+      <section className="px-[5vw] py-[7svh] md:py-[9svh]">
         <div
           ref={frameRef}
           onPointerMove={onMove}
@@ -457,18 +457,18 @@ function ContactUs() {
                 <div className="relative md:col-span-5">
                   <span
                     aria-hidden
-                    className="sp-ghost pointer-events-none absolute -top-4 right-0 select-none text-[clamp(7rem,16vw,15rem)] font-light leading-tight text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.14)] md:-top-8 md:left-0 md:right-auto"
+                    className="sp-ghost pointer-events-none absolute -top-4 right-0 select-none text-[clamp(5rem,11vw,10rem)] font-light leading-tight text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.14)] md:-top-8 md:left-0 md:right-auto"
                   >
                     {pad2(shown + 1)}
                   </span>
 
-                  <div className="relative pt-[18vw] md:pt-[11vw]">
+                  <div className="relative pt-[13vw] md:pt-[8vw]">
                     <p className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/50">
                       Step {pad2(shown + 1)} / {pad2(STEPS.length)}
                     </p>
                     <h2
                       aria-live="polite"
-                      className="mt-4 text-[clamp(2rem,4.4vw,5rem)] font-light uppercase leading-tight tracking-[-0.02em]"
+                      className="mt-4 text-[clamp(1.75rem,3.3vw,3.75rem)] font-light uppercase leading-tight tracking-[-0.02em]"
                     >
                       {STEPS[shown].q.split(" ").map((w, i) => (
                         <span key={`${shown}-${i}`}>
@@ -572,7 +572,7 @@ function ContactUs() {
                           value={brief.message}
                           onChange={(e) => set("message", e.target.value)}
                           placeholder="We're launching… we want people to feel…"
-                          className="mt-2 w-full resize-none border-b border-foreground/30 bg-transparent pb-3 text-[clamp(1.2rem,2.2vw,2rem)] font-light leading-tight outline-none transition-colors duration-300 placeholder:text-foreground/20 focus:border-accent"
+                          className="mt-2 w-full resize-none border-b border-foreground/30 bg-transparent pb-3 text-[clamp(1.05rem,1.7vw,1.6rem)] font-light leading-tight outline-none transition-colors duration-300 placeholder:text-foreground/20 focus:border-accent"
                         />
                         <span className="mt-2 block text-right font-mono text-[11px] tabular-nums text-foreground/40">
                           {brief.message.trim().length} characters
@@ -661,7 +661,7 @@ function ContactUs() {
       </section>
 
       {/* ---------- other ways ---------- */}
-      <section className="border-t border-foreground/15 px-[5vw] py-[9svh]">
+      <section className="border-t border-foreground/15 px-[5vw] py-[7svh]">
         <dl className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {(
             [
@@ -672,7 +672,7 @@ function ContactUs() {
           ).map(([label, value, href]) => (
             <div key={label}>
               <dt className="font-mono text-[11px] uppercase tracking-[0.2em] text-foreground/50">{label}</dt>
-              <dd className="mt-3 whitespace-pre-line text-[clamp(1.1rem,1.8vw,1.8rem)] font-light uppercase leading-tight tracking-[-0.01em]">
+              <dd className="mt-3 whitespace-pre-line text-[clamp(1rem,1.5vw,1.5rem)] font-light uppercase leading-tight tracking-[-0.01em]">
                 {href ? (
                   <a href={href} className="transition-colors duration-300 hover:text-accent">
                     {value}
